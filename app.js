@@ -1,23 +1,33 @@
 // ==========================================
-// POPCORN MANAGER
-// Version 1
+// POPCORN MANAGER V2
+// Small Popcorn = K1 per bag
+// Payment = Cash
 // ==========================================
 
 
 // ---------- DATA ----------
 
-let sales = JSON.parse(localStorage.getItem("popcornSales")) || [];
+let sales =
+  JSON.parse(localStorage.getItem("popcornSales")) || [];
 
-let expenses = JSON.parse(localStorage.getItem("popcornExpenses")) || [];
+let expenses =
+  JSON.parse(localStorage.getItem("popcornExpenses")) || [];
 
-let stock = JSON.parse(localStorage.getItem("popcornStock")) || [];
+let stock =
+  JSON.parse(localStorage.getItem("popcornStock")) || [];
 
 
-// ---------- START APP ----------
+// Fixed selling price
+const POPCORN_PRICE = 1;
+
+
+// ---------- START ----------
 
 document.addEventListener("DOMContentLoaded", function () {
 
   updateDate();
+
+  updateSalePreview();
 
   updateDashboard();
 
@@ -29,28 +39,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
   updateReports();
 
-  setActiveNav("dashboard");
-
 });
 
 
-// ---------- PAGE NAVIGATION ----------
+// ==========================================
+// NAVIGATION
+// ==========================================
 
 function showPage(pageName) {
 
-  const pages = document.querySelectorAll(".page");
+  document.querySelectorAll(".page").forEach(function(page) {
 
-  pages.forEach(function (page) {
     page.classList.remove("active");
+
   });
 
-  const selectedPage = document.getElementById(pageName);
 
-  if (selectedPage) {
-    selectedPage.classList.add("active");
+  const page =
+    document.getElementById(pageName);
+
+  if (page) {
+
+    page.classList.add("active");
+
   }
 
-  setActiveNav(pageName);
+
+  document.querySelectorAll(".bottom-nav button")
+    .forEach(function(button) {
+
+      button.classList.remove("active");
+
+    });
+
+
+  const nav =
+    document.getElementById("nav-" + pageName);
+
+  if (nav) {
+
+    nav.classList.add("active");
+
+  }
+
 
   window.scrollTo({
     top: 0,
@@ -60,44 +91,37 @@ function showPage(pageName) {
 }
 
 
-function setActiveNav(pageName) {
-
-  const buttons = document.querySelectorAll(".bottom-nav button");
-
-  buttons.forEach(function (button) {
-    button.classList.remove("active");
-  });
-
-  const selectedButton = document.getElementById("nav-" + pageName);
-
-  if (selectedButton) {
-    selectedButton.classList.add("active");
-  }
-
-}
-
-
-// ---------- DATE ----------
+// ==========================================
+// DATE
+// ==========================================
 
 function updateDate() {
 
-  const dateElement = document.getElementById("currentDate");
+  const element =
+    document.getElementById("currentDate");
 
   const today = new Date();
 
-  const formattedDate = today.toLocaleDateString("en-ZM", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
 
-  dateElement.textContent = formattedDate;
+  element.textContent =
+    today.toLocaleDateString("en-ZM", {
+
+      weekday: "long",
+
+      year: "numeric",
+
+      month: "long",
+
+      day: "numeric"
+
+    });
 
 }
 
 
-// ---------- MONEY ----------
+// ==========================================
+// MONEY
+// ==========================================
 
 function money(amount) {
 
@@ -106,7 +130,9 @@ function money(amount) {
 }
 
 
-// ---------- SAVE DATA ----------
+// ==========================================
+// SAVE
+// ==========================================
 
 function saveData() {
 
@@ -128,7 +154,9 @@ function saveData() {
 }
 
 
-// ---------- DATE KEY ----------
+// ==========================================
+// DATE CHECK
+// ==========================================
 
 function dateKey(date) {
 
@@ -145,8 +173,6 @@ function dateKey(date) {
 }
 
 
-// ---------- TODAY ----------
-
 function isToday(date) {
 
   return dateKey(date) === dateKey(new Date());
@@ -155,58 +181,83 @@ function isToday(date) {
 
 
 // ==========================================
-// SALES
+// SALE PREVIEW
+// ==========================================
+
+document.addEventListener("input", function(event) {
+
+  if (event.target.id === "saleQuantity") {
+
+    updateSalePreview();
+
+  }
+
+});
+
+
+function updateSalePreview() {
+
+  const quantity =
+    Number(
+      document.getElementById("saleQuantity")?.value
+    ) || 0;
+
+
+  const total =
+    quantity * POPCORN_PRICE;
+
+
+  const element =
+    document.getElementById("saleTotal");
+
+
+  if (element) {
+
+    element.textContent = money(total);
+
+  }
+
+}
+
+
+// ==========================================
+// ADD SALE
 // ==========================================
 
 function addSale() {
 
-  const product =
-    document.getElementById("saleProduct").value;
-
   const quantity =
-    Number(document.getElementById("saleQuantity").value);
-
-  const price =
-    Number(document.getElementById("salePrice").value);
-
-  const payment =
-    document.getElementById("paymentMethod").value;
+    Number(
+      document.getElementById("saleQuantity").value
+    );
 
 
   if (!quantity || quantity <= 0) {
 
-    alert("Please enter a valid quantity.");
+    alert("Please enter the number of bags sold.");
 
     return;
 
   }
 
 
-  if (price < 0 || isNaN(price)) {
-
-    alert("Please enter a valid price.");
-
-    return;
-
-  }
-
-
-  const total = quantity * price;
+  const total =
+    quantity * POPCORN_PRICE;
 
 
   const sale = {
 
     id: Date.now(),
 
-    product: product,
+    product: "Small Popcorn",
 
     quantity: quantity,
 
-    price: price,
+    price: POPCORN_PRICE,
 
     total: total,
 
-    payment: payment,
+    payment: "Cash",
 
     date: new Date().toISOString()
 
@@ -215,7 +266,9 @@ function addSale() {
 
   sales.unshift(sale);
 
+
   saveData();
+
 
   renderSales();
 
@@ -226,23 +279,29 @@ function addSale() {
 
   document.getElementById("saleQuantity").value = "";
 
-  document.getElementById("salePrice").value = "";
+  updateSalePreview();
 
 
   alert(
-    "Sale saved successfully!\nTotal: " +
+    "Sale saved!\n\n" +
+    quantity +
+    " bags × K1\n" +
+    "Total: " +
     money(total)
   );
 
 }
 
 
-// ---------- RENDER SALES ----------
+// ==========================================
+// SALES HISTORY
+// ==========================================
 
 function renderSales() {
 
   const container =
     document.getElementById("salesHistory");
+
 
   if (sales.length === 0) {
 
@@ -257,13 +316,15 @@ function renderSales() {
   container.innerHTML = "";
 
 
-  sales.forEach(function (sale) {
+  sales.forEach(function(sale) {
 
     const date =
       new Date(sale.date).toLocaleString();
 
+
     const div =
       document.createElement("div");
+
 
     div.className = "sale-item";
 
@@ -275,17 +336,17 @@ function renderSales() {
         <div>
 
           <div class="item-name">
-            ${escapeHTML(sale.product)}
+            🍿 ${sale.quantity} bags
           </div>
 
           <div class="item-info">
-            ${sale.quantity} × ${money(sale.price)}
-            • ${escapeHTML(sale.payment)}
+            Small Popcorn • Cash
             <br>
             ${date}
           </div>
 
         </div>
+
 
         <div>
 
@@ -313,18 +374,26 @@ function renderSales() {
 }
 
 
-// ---------- DELETE SALE ----------
+// ==========================================
+// DELETE SALE
+// ==========================================
 
 function deleteSale(id) {
 
   if (!confirm("Delete this sale?")) {
+
     return;
+
   }
 
+
   sales =
-    sales.filter(function (sale) {
+    sales.filter(function(sale) {
+
       return sale.id !== id;
+
     });
+
 
   saveData();
 
@@ -338,7 +407,7 @@ function deleteSale(id) {
 
 
 // ==========================================
-// EXPENSES
+// EXPENSE
 // ==========================================
 
 function addExpense() {
@@ -346,8 +415,12 @@ function addExpense() {
   const name =
     document.getElementById("expenseName").value;
 
+
   const amount =
-    Number(document.getElementById("expenseAmount").value);
+    Number(
+      document.getElementById("expenseAmount").value
+    );
+
 
   const note =
     document.getElementById("expenseNote").value;
@@ -355,7 +428,7 @@ function addExpense() {
 
   if (!amount || amount <= 0) {
 
-    alert("Please enter a valid expense amount.");
+    alert("Please enter a valid expense.");
 
     return;
 
@@ -379,7 +452,9 @@ function addExpense() {
 
   expenses.unshift(expense);
 
+
   saveData();
+
 
   renderExpenses();
 
@@ -401,12 +476,15 @@ function addExpense() {
 }
 
 
-// ---------- RENDER EXPENSES ----------
+// ==========================================
+// EXPENSE HISTORY
+// ==========================================
 
 function renderExpenses() {
 
   const container =
     document.getElementById("expensesHistory");
+
 
   if (expenses.length === 0) {
 
@@ -421,13 +499,15 @@ function renderExpenses() {
   container.innerHTML = "";
 
 
-  expenses.forEach(function (expense) {
+  expenses.forEach(function(expense) {
 
     const date =
       new Date(expense.date).toLocaleString();
 
+
     const div =
       document.createElement("div");
+
 
     div.className = "expense-item";
 
@@ -439,7 +519,7 @@ function renderExpenses() {
         <div>
 
           <div class="item-name">
-            ${escapeHTML(expense.name)}
+            💸 ${escapeHTML(expense.name)}
           </div>
 
           <div class="item-info">
@@ -449,6 +529,7 @@ function renderExpenses() {
           </div>
 
         </div>
+
 
         <div>
 
@@ -476,18 +557,26 @@ function renderExpenses() {
 }
 
 
-// ---------- DELETE EXPENSE ----------
+// ==========================================
+// DELETE EXPENSE
+// ==========================================
 
 function deleteExpense(id) {
 
   if (!confirm("Delete this expense?")) {
+
     return;
+
   }
 
+
   expenses =
-    expenses.filter(function (expense) {
+    expenses.filter(function(expense) {
+
       return expense.id !== id;
+
     });
+
 
   saveData();
 
@@ -507,10 +596,17 @@ function deleteExpense(id) {
 function addStock() {
 
   const name =
-    document.getElementById("stockName").value.trim();
+    document
+      .getElementById("stockName")
+      .value
+      .trim();
+
 
   const quantity =
-    Number(document.getElementById("stockQuantity").value);
+    Number(
+      document.getElementById("stockQuantity").value
+    );
+
 
   const unit =
     document.getElementById("stockUnit").value;
@@ -518,7 +614,7 @@ function addStock() {
 
   if (!name) {
 
-    alert("Please enter the stock item.");
+    alert("Please enter a stock item.");
 
     return;
 
@@ -535,7 +631,7 @@ function addStock() {
 
 
   const existing =
-    stock.find(function (item) {
+    stock.find(function(item) {
 
       return (
         item.name.toLowerCase() ===
@@ -577,12 +673,14 @@ function addStock() {
   document.getElementById("stockQuantity").value = "";
 
 
-  alert("Stock updated successfully!");
+  alert("Stock updated!");
 
 }
 
 
-// ---------- RENDER STOCK ----------
+// ==========================================
+// STOCK LIST
+// ==========================================
 
 function renderStock() {
 
@@ -603,10 +701,11 @@ function renderStock() {
   container.innerHTML = "";
 
 
-  stock.forEach(function (item) {
+  stock.forEach(function(item) {
 
     const div =
       document.createElement("div");
+
 
     div.className = "stock-item";
 
@@ -618,7 +717,7 @@ function renderStock() {
         <div>
 
           <div class="item-name">
-            ${escapeHTML(item.name)}
+            📦 ${escapeHTML(item.name)}
           </div>
 
           <div class="item-info">
@@ -626,6 +725,7 @@ function renderStock() {
           </div>
 
         </div>
+
 
         <button
           class="delete-btn"
@@ -645,18 +745,26 @@ function renderStock() {
 }
 
 
-// ---------- DELETE STOCK ----------
+// ==========================================
+// DELETE STOCK
+// ==========================================
 
 function deleteStock(id) {
 
   if (!confirm("Delete this stock item?")) {
+
     return;
+
   }
 
+
   stock =
-    stock.filter(function (item) {
+    stock.filter(function(item) {
+
       return item.id !== id;
+
     });
+
 
   saveData();
 
@@ -673,31 +781,49 @@ function updateDashboard() {
 
   const todaySales =
     sales
-      .filter(function (sale) {
+
+      .filter(function(sale) {
+
         return isToday(sale.date);
+
       })
-      .reduce(function (total, sale) {
+
+      .reduce(function(total, sale) {
+
         return total + sale.total;
+
       }, 0);
 
 
   const todayExpenses =
     expenses
-      .filter(function (expense) {
+
+      .filter(function(expense) {
+
         return isToday(expense.date);
+
       })
-      .reduce(function (total, expense) {
+
+      .reduce(function(total, expense) {
+
         return total + expense.amount;
+
       }, 0);
 
 
-  const todayItems =
+  const todayBags =
     sales
-      .filter(function (sale) {
+
+      .filter(function(sale) {
+
         return isToday(sale.date);
+
       })
-      .reduce(function (total, sale) {
+
+      .reduce(function(total, sale) {
+
         return total + sale.quantity;
+
       }, 0);
 
 
@@ -705,17 +831,40 @@ function updateDashboard() {
     todaySales - todayExpenses;
 
 
-  document.getElementById("todaySales").textContent =
-    money(todaySales);
+  const cash =
+    sales.reduce(function(total, sale) {
 
-  document.getElementById("todayExpenses").textContent =
-    money(todayExpenses);
+      return total + sale.total;
 
-  document.getElementById("todayProfit").textContent =
-    money(profit);
+    }, 0)
 
-  document.getElementById("todayItems").textContent =
-    todayItems;
+    -
+
+    expenses.reduce(function(total, expense) {
+
+      return total + expense.amount;
+
+    }, 0);
+
+
+  document.getElementById("todaySales")
+    .textContent = money(todaySales);
+
+
+  document.getElementById("todayExpenses")
+    .textContent = money(todayExpenses);
+
+
+  document.getElementById("todayProfit")
+    .textContent = money(profit);
+
+
+  document.getElementById("todayBags")
+    .textContent = todayBags;
+
+
+  document.getElementById("cashOnHand")
+    .textContent = money(cash);
 
 
   renderRecentSales();
@@ -723,7 +872,9 @@ function updateDashboard() {
 }
 
 
-// ---------- RECENT SALES ----------
+// ==========================================
+// RECENT SALES
+// ==========================================
 
 function renderRecentSales() {
 
@@ -741,17 +892,14 @@ function renderRecentSales() {
   }
 
 
-  const recent =
-    sales.slice(0, 5);
-
-
   container.innerHTML = "";
 
 
-  recent.forEach(function (sale) {
+  sales.slice(0, 5).forEach(function(sale) {
 
     const div =
       document.createElement("div");
+
 
     div.className = "sale-item";
 
@@ -763,14 +911,15 @@ function renderRecentSales() {
         <div>
 
           <div class="item-name">
-            ${escapeHTML(sale.product)}
+            🍿 ${sale.quantity} bags
           </div>
 
           <div class="item-info">
-            ${sale.quantity} packet(s)
+            Small Popcorn • Cash
           </div>
 
         </div>
+
 
         <div class="item-price">
           ${money(sale.total)}
@@ -795,20 +944,26 @@ function renderRecentSales() {
 function updateReports() {
 
   const totalSales =
-    sales.reduce(function (total, sale) {
+    sales.reduce(function(total, sale) {
+
       return total + sale.total;
+
     }, 0);
 
 
   const totalExpenses =
-    expenses.reduce(function (total, expense) {
+    expenses.reduce(function(total, expense) {
+
       return total + expense.amount;
+
     }, 0);
 
 
-  const totalItems =
-    sales.reduce(function (total, sale) {
+  const totalBags =
+    sales.reduce(function(total, sale) {
+
       return total + sale.quantity;
+
     }, 0);
 
 
@@ -816,17 +971,20 @@ function updateReports() {
     totalSales - totalExpenses;
 
 
-  document.getElementById("totalSales").textContent =
-    money(totalSales);
+  document.getElementById("totalSales")
+    .textContent = money(totalSales);
 
-  document.getElementById("totalExpenses").textContent =
-    money(totalExpenses);
 
-  document.getElementById("totalProfit").textContent =
-    money(totalProfit);
+  document.getElementById("totalExpenses")
+    .textContent = money(totalExpenses);
 
-  document.getElementById("totalItems").textContent =
-    totalItems;
+
+  document.getElementById("totalProfit")
+    .textContent = money(totalProfit);
+
+
+  document.getElementById("totalBags")
+    .textContent = totalBags;
 
 }
 
@@ -840,13 +998,16 @@ function clearAllData() {
   const confirmation =
     confirm(
       "WARNING!\n\n" +
-      "This will permanently delete all sales, expenses and stock.\n\n" +
+      "This will permanently delete all sales, " +
+      "expenses and stock.\n\n" +
       "Continue?"
     );
 
 
   if (!confirmation) {
+
     return;
+
   }
 
 
@@ -858,6 +1019,7 @@ function clearAllData() {
 
 
   saveData();
+
 
   renderSales();
 
@@ -876,16 +1038,21 @@ function clearAllData() {
 
 
 // ==========================================
-// SECURITY HELPER
+// SECURITY
 // ==========================================
 
 function escapeHTML(value) {
 
   return String(value)
+
     .replace(/&/g, "&amp;")
+
     .replace(/</g, "&lt;")
+
     .replace(/>/g, "&gt;")
+
     .replace(/"/g, "&quot;")
+
     .replace(/'/g, "&#039;");
 
 }
