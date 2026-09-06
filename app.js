@@ -1,67 +1,25 @@
-/* ==========================================
-   POPCORN MANAGER V3
-   ========================================== */
-
-/* =========================
-   BUSINESS SETTINGS
-   ========================= */
-
 const POPCORN_PRICE = 1;
 const PRODUCT_NAME = "Small Popcorn";
-const PAYMENT_METHOD = "Cash";
-const PACKAGING = "Bags";
 
-
-/* =========================
-   LOCAL STORAGE
-   ========================= */
-
-let sales = JSON.parse(
-  localStorage.getItem("popcornSales") || "[]"
-);
-
-let expenses = JSON.parse(
-  localStorage.getItem("popcornExpenses") || "[]"
-);
-
-let stock = JSON.parse(
-  localStorage.getItem("popcornStock") || "[]"
-);
-
-let dailyClosings = JSON.parse(
-  localStorage.getItem("popcornDailyClosings") || "[]"
-);
-
+let sales = JSON.parse(localStorage.getItem("popcornSales") || "[]");
+let expenses = JSON.parse(localStorage.getItem("popcornExpenses") || "[]");
+let stock = JSON.parse(localStorage.getItem("popcornStock") || "[]");
+let dailyClosings = JSON.parse(localStorage.getItem("popcornDailyClosings") || "[]");
 let startingCashByDate = JSON.parse(
   localStorage.getItem("popcornStartingCashByDate") || "{}"
 );
 
 
-/* =========================
-   SAVE DATA
-   ========================= */
+/* SAVE */
 
 function saveData() {
-  localStorage.setItem(
-    "popcornSales",
-    JSON.stringify(sales)
-  );
-
-  localStorage.setItem(
-    "popcornExpenses",
-    JSON.stringify(expenses)
-  );
-
-  localStorage.setItem(
-    "popcornStock",
-    JSON.stringify(stock)
-  );
-
+  localStorage.setItem("popcornSales", JSON.stringify(sales));
+  localStorage.setItem("popcornExpenses", JSON.stringify(expenses));
+  localStorage.setItem("popcornStock", JSON.stringify(stock));
   localStorage.setItem(
     "popcornDailyClosings",
     JSON.stringify(dailyClosings)
   );
-
   localStorage.setItem(
     "popcornStartingCashByDate",
     JSON.stringify(startingCashByDate)
@@ -69,46 +27,32 @@ function saveData() {
 }
 
 
-/* =========================
-   DATE FUNCTIONS
-   ========================= */
+/* DATE */
 
 function getTodayKey() {
-  const now = new Date();
+  const d = new Date();
 
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function formatDate(value) {
+  const d = new Date(value);
 
-function formatDate(dateValue) {
+  if (isNaN(d.getTime())) return value;
 
-  const date = new Date(dateValue);
-
-  if (isNaN(date.getTime())) {
-    return dateValue;
-  }
-
-  return date.toLocaleDateString("en-ZM", {
+  return d.toLocaleDateString("en-ZM", {
     day: "numeric",
     month: "short",
     year: "numeric"
   });
 }
 
+function formatDateTime(value) {
+  const d = new Date(value);
 
-function formatDateTime(dateValue) {
+  if (isNaN(d.getTime())) return value;
 
-  const date = new Date(dateValue);
-
-  if (isNaN(date.getTime())) {
-    return dateValue;
-  }
-
-  return date.toLocaleString("en-ZM", {
+  return d.toLocaleString("en-ZM", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -117,9 +61,7 @@ function formatDateTime(dateValue) {
   });
 }
 
-
 function todayReadable() {
-
   return new Date().toLocaleDateString("en-ZM", {
     weekday: "long",
     day: "numeric",
@@ -129,22 +71,16 @@ function todayReadable() {
 }
 
 
-/* =========================
-   MONEY
-   ========================= */
+/* MONEY */
 
-function money(amount) {
-
-  return "K" + Number(amount || 0).toFixed(2);
+function money(value) {
+  return "K" + Number(value || 0).toFixed(2);
 }
 
 
-/* =========================
-   HTML SECURITY
-   ========================= */
+/* SECURITY */
 
 function escapeHTML(value) {
-
   return String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -154,16 +90,12 @@ function escapeHTML(value) {
 }
 
 
-/* =========================
-   TOAST
-   ========================= */
+/* TOAST */
 
 function showToast(message) {
-
   const toast = document.getElementById("toast");
 
   toast.textContent = message;
-
   toast.classList.add("show");
 
   setTimeout(() => {
@@ -172,9 +104,7 @@ function showToast(message) {
 }
 
 
-/* =========================
-   PAGE NAVIGATION
-   ========================= */
+/* NAVIGATION */
 
 function showPage(pageId) {
 
@@ -192,12 +122,12 @@ function showPage(pageId) {
     button.classList.remove("active");
   });
 
-  const navButton = document.querySelector(
+  const nav = document.querySelector(
     `.nav-button[data-page="${pageId}"]`
   );
 
-  if (navButton) {
-    navButton.classList.add("active");
+  if (nav) {
+    nav.classList.add("active");
   }
 
   updateAll();
@@ -209,64 +139,41 @@ function showPage(pageId) {
 }
 
 
-/* =========================
-   TODAY'S SALES
-   ========================= */
+/* TODAY */
 
 function getTodaySales() {
 
   const today = getTodayKey();
 
   return sales
-    .filter(sale => sale.dateKey === today)
-    .reduce(
-      (total, sale) => total + Number(sale.total || 0),
-      0
-    );
+    .filter(s => s.dateKey === today)
+    .reduce((sum, s) => sum + Number(s.total || 0), 0);
 }
-
 
 function getTodayBags() {
 
   const today = getTodayKey();
 
   return sales
-    .filter(sale => sale.dateKey === today)
-    .reduce(
-      (total, sale) => total + Number(sale.quantity || 0),
-      0
-    );
+    .filter(s => s.dateKey === today)
+    .reduce((sum, s) => sum + Number(s.quantity || 0), 0);
 }
-
-
-/* =========================
-   TODAY'S EXPENSES
-   ========================= */
 
 function getTodayExpenses() {
 
   const today = getTodayKey();
 
   return expenses
-    .filter(expense => expense.dateKey === today)
-    .reduce(
-      (total, expense) => total + Number(expense.amount || 0),
-      0
-    );
+    .filter(e => e.dateKey === today)
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
 }
 
 
-/* =========================
-   STARTING CASH
-   ========================= */
+/* STARTING CASH */
 
 function getTodayStartingCash() {
-
-  const today = getTodayKey();
-
-  return Number(startingCashByDate[today] || 0);
+  return Number(startingCashByDate[getTodayKey()] || 0);
 }
-
 
 function saveStartingCash() {
 
@@ -276,7 +183,6 @@ function saveStartingCash() {
   }
 
   const input = document.getElementById("startingCash");
-
   const amount = Number(input.value);
 
   if (input.value === "" || amount < 0) {
@@ -284,55 +190,42 @@ function saveStartingCash() {
     return;
   }
 
-  const today = getTodayKey();
-
-  startingCashByDate[today] = amount;
+  startingCashByDate[getTodayKey()] = amount;
 
   saveData();
-
   updateAll();
 
   showToast("Starting cash saved.");
 }
 
 
-/* =========================
-   EXPECTED CASH
-   ========================= */
+/* EXPECTED CASH */
 
 function getTodayExpectedCash() {
 
-  const startingCash = getTodayStartingCash();
-  const salesTotal = getTodaySales();
-  const expensesTotal = getTodayExpenses();
-
-  return startingCash + salesTotal - expensesTotal;
-}
-
-
-/* =========================
-   DAILY CLOSING
-   ========================= */
-
-function getTodayClosing() {
-
-  const today = getTodayKey();
-
-  return dailyClosings.find(
-    closing => closing.dateKey === today
+  return (
+    getTodayStartingCash() +
+    getTodaySales() -
+    getTodayExpenses()
   );
 }
 
 
-function isTodayClosed() {
+/* CLOSED? */
 
+function getTodayClosing() {
+
+  return dailyClosings.find(
+    c => c.dateKey === getTodayKey()
+  );
+}
+
+function isTodayClosed() {
   return Boolean(getTodayClosing());
 }
 
 
-/* =========================
-   ADD SALE
-   ========================= */
+/* SALE */
 
 function addSale() {
 
@@ -341,96 +234,76 @@ function addSale() {
     return;
   }
 
-  const quantityInput =
-    document.getElementById("saleQuantity");
-
-  const quantity = Number(quantityInput.value);
+  const input = document.getElementById("saleQuantity");
+  const quantity = Number(input.value);
 
   if (!quantity || quantity <= 0) {
     showToast("Enter the number of bags sold.");
     return;
   }
 
-  const today = getTodayKey();
-
   const sale = {
     id: Date.now(),
-    dateKey: today,
+    dateKey: getTodayKey(),
     date: new Date().toISOString(),
     product: PRODUCT_NAME,
     quantity: quantity,
     price: POPCORN_PRICE,
     total: quantity * POPCORN_PRICE,
-    payment: PAYMENT_METHOD
+    payment: "Cash"
   };
 
   sales.unshift(sale);
 
   saveData();
 
-  quantityInput.value = "";
-
+  input.value = "";
+  updateSalePreview();
   updateAll();
 
-  showToast(
-    `${quantity} bag${quantity === 1 ? "" : "s"} sold for ${money(sale.total)}`
-  );
+  showToast(`${quantity} bag(s) sold for ${money(sale.total)}`);
 }
 
 
-/* =========================
-   SALE PREVIEW
-   ========================= */
+/* SALE PREVIEW */
 
 function updateSalePreview() {
 
   const quantity =
     Number(document.getElementById("saleQuantity").value) || 0;
 
-  const total = quantity * POPCORN_PRICE;
-
-  document.getElementById(
-    "saleTotalPreview"
-  ).textContent = money(total);
+  document.getElementById("saleTotalPreview").textContent =
+    money(quantity * POPCORN_PRICE);
 }
 
 
-/* =========================
-   DELETE SALE
-   ========================= */
+/* DELETE SALE */
 
 function deleteSale(id) {
 
-  const sale = sales.find(item => item.id === id);
+  const sale = sales.find(s => s.id === id);
 
   if (!sale) return;
 
   if (
-    dailyClosings.some(
-      closing => closing.dateKey === sale.dateKey
-    )
+    dailyClosings.some(c => c.dateKey === sale.dateKey)
   ) {
     showToast("This sale belongs to a closed day.");
     return;
   }
 
-  if (!confirm("Delete this sale?")) {
-    return;
-  }
+  if (!confirm("Delete this sale?")) return;
 
-  sales = sales.filter(item => item.id !== id);
+  sales = sales.filter(s => s.id !== id);
 
   saveData();
-
   updateAll();
 
   showToast("Sale deleted.");
 }
 
 
-/* =========================
-   ADD EXPENSE
-   ========================= */
+/* EXPENSE */
 
 function addExpense() {
 
@@ -455,11 +328,9 @@ function addExpense() {
     return;
   }
 
-  const today = getTodayKey();
-
   const expense = {
     id: Date.now(),
-    dateKey: today,
+    dateKey: getTodayKey(),
     date: new Date().toISOString(),
     category: category,
     amount: amount,
@@ -479,44 +350,33 @@ function addExpense() {
 }
 
 
-/* =========================
-   DELETE EXPENSE
-   ========================= */
+/* DELETE EXPENSE */
 
 function deleteExpense(id) {
 
-  const expense = expenses.find(item => item.id === id);
+  const expense = expenses.find(e => e.id === id);
 
   if (!expense) return;
 
   if (
-    dailyClosings.some(
-      closing => closing.dateKey === expense.dateKey
-    )
+    dailyClosings.some(c => c.dateKey === expense.dateKey)
   ) {
     showToast("This expense belongs to a closed day.");
     return;
   }
 
-  if (!confirm("Delete this expense?")) {
-    return;
-  }
+  if (!confirm("Delete this expense?")) return;
 
-  expenses = expenses.filter(
-    item => item.id !== id
-  );
+  expenses = expenses.filter(e => e.id !== id);
 
   saveData();
-
   updateAll();
 
   showToast("Expense deleted.");
 }
 
 
-/* =========================
-   ADD STOCK
-   ========================= */
+/* STOCK */
 
 function addStock() {
 
@@ -526,39 +386,31 @@ function addStock() {
   const quantityInput =
     document.getElementById("stockQuantity");
 
-  const item = itemInput.value.trim();
+  const name = itemInput.value.trim();
   const quantity = Number(quantityInput.value);
 
-  if (!item) {
+  if (!name) {
     showToast("Enter a stock item.");
     return;
   }
 
-  if (
-    quantityInput.value === "" ||
-    quantity < 0
-  ) {
+  if (quantityInput.value === "" || quantity < 0) {
     showToast("Enter a valid quantity.");
     return;
   }
 
   const existing = stock.find(
-    stockItem =>
-      stockItem.name.toLowerCase() === item.toLowerCase()
+    item => item.name.toLowerCase() === name.toLowerCase()
   );
 
   if (existing) {
-
     existing.quantity += quantity;
-
   } else {
-
     stock.unshift({
       id: Date.now(),
-      name: item,
+      name: name,
       quantity: quantity
     });
-
   }
 
   saveData();
@@ -571,30 +423,20 @@ function addStock() {
   showToast("Stock updated.");
 }
 
-
-/* =========================
-   DELETE STOCK
-   ========================= */
-
 function deleteStock(id) {
 
-  if (!confirm("Remove this stock item?")) {
-    return;
-  }
+  if (!confirm("Remove this stock item?")) return;
 
   stock = stock.filter(item => item.id !== id);
 
   saveData();
-
   updateAll();
 
-  showToast("Stock item removed.");
+  showToast("Stock removed.");
 }
 
 
-/* =========================
-   CLOSE DAY
-   ========================= */
+/* CLOSE DAY */
 
 function closeDay() {
 
@@ -603,203 +445,160 @@ function closeDay() {
     return;
   }
 
-  const actualInput =
+  const input =
     document.getElementById("actualCash");
 
-  const actualCash = Number(actualInput.value);
+  const actualCash = Number(input.value);
 
-  if (
-    actualInput.value === "" ||
-    actualCash < 0
-  ) {
+  if (input.value === "" || actualCash < 0) {
     showToast("Enter your actual closing cash.");
     return;
   }
 
-  const today = getTodayKey();
-
   const startingCash = getTodayStartingCash();
-  const todaySales = getTodaySales();
-  const todayExpenses = getTodayExpenses();
-  const todayBags = getTodayBags();
+  const salesTotal = getTodaySales();
+  const expensesTotal = getTodayExpenses();
+  const bags = getTodayBags();
 
-  const expectedClosingCash =
+  const expected =
     startingCash +
-    todaySales -
-    todayExpenses;
+    salesTotal -
+    expensesTotal;
 
   const difference =
-    actualCash -
-    expectedClosingCash;
+    actualCash - expected;
 
   const closing = {
+
     id: Date.now(),
-    dateKey: today,
+
+    dateKey: getTodayKey(),
+
     date: new Date().toISOString(),
 
     startingCash: startingCash,
-    sales: todaySales,
-    expenses: todayExpenses,
 
-    expectedClosingCash: expectedClosingCash,
+    sales: salesTotal,
+
+    expenses: expensesTotal,
+
+    expectedClosingCash: expected,
+
     actualClosingCash: actualCash,
 
     difference: difference,
 
-    bagsSold: todayBags,
+    bagsSold: bags,
 
     closedAt: new Date().toISOString()
+
   };
 
   dailyClosings.unshift(closing);
 
   saveData();
-
   updateAll();
 
   showToast("Business day closed successfully.");
 }
 
 
-/* =========================
-   REOPEN TODAY
-   ========================= */
+/* REOPEN */
 
 function reopenToday() {
 
-  const closing = getTodayClosing();
-
-  if (!closing) {
-    showToast("Today's business is already open.");
+  if (!isTodayClosed()) {
+    showToast("Today is already open.");
     return;
   }
 
-  const confirmed = confirm(
-    "Reopen today's business?\n\n" +
-    "You will be able to record or correct today's sales and expenses again."
-  );
-
-  if (!confirmed) {
+  if (!confirm(
+    "Reopen today's business?\n\nYou can then correct today's sales and expenses."
+  )) {
     return;
   }
 
-  dailyClosings = dailyClosings.filter(
-    item => item.dateKey !== getTodayKey()
-  );
+  dailyClosings =
+    dailyClosings.filter(
+      c => c.dateKey !== getTodayKey()
+    );
 
   saveData();
-
   updateAll();
 
   showToast("Today has been reopened.");
 }
 
 
-/* =========================
-   RENDER DASHBOARD
-   ========================= */
+/* DASHBOARD */
 
 function renderDashboard() {
 
-  document.getElementById(
-    "todayDate"
-  ).textContent = todayReadable();
+  document.getElementById("todayDate").textContent =
+    todayReadable();
 
-  const startingCash =
-    getTodayStartingCash();
+  document.getElementById("dashboardStartingCash").textContent =
+    money(getTodayStartingCash());
 
-  const todaySales =
-    getTodaySales();
+  document.getElementById("dashboardSales").textContent =
+    money(getTodaySales());
 
-  const todayExpenses =
-    getTodayExpenses();
+  document.getElementById("dashboardExpenses").textContent =
+    money(getTodayExpenses());
 
-  const todayBags =
+  document.getElementById("dashboardBags").textContent =
     getTodayBags();
 
-  const expectedCash =
-    getTodayExpectedCash();
+  document.getElementById("dashboardExpectedCash").textContent =
+    money(getTodayExpectedCash());
 
-  document.getElementById(
-    "dashboardStartingCash"
-  ).textContent = money(startingCash);
-
-  document.getElementById(
-    "dashboardSales"
-  ).textContent = money(todaySales);
-
-  document.getElementById(
-    "dashboardExpenses"
-  ).textContent = money(todayExpenses);
-
-  document.getElementById(
-    "dashboardBags"
-  ).textContent = todayBags;
-
-  document.getElementById(
-    "dashboardExpectedCash"
-  ).textContent = money(expectedCash);
-
+  const box =
+    document.getElementById("dashboardActualCashBox");
 
   const closing = getTodayClosing();
 
-  const actualBox =
-    document.getElementById(
-      "dashboardActualCashBox"
-    );
-
   if (closing) {
 
-    actualBox.classList.remove("hidden");
+    box.classList.remove("hidden");
 
-    document.getElementById(
-      "dashboardActualCash"
-    ).textContent =
+    document.getElementById("dashboardActualCash").textContent =
       money(closing.actualClosingCash);
 
-    const differenceElement =
-      document.getElementById(
-        "dashboardDifference"
-      );
+    const diff =
+      document.getElementById("dashboardDifference");
 
-    differenceElement.textContent =
+    diff.textContent =
       money(closing.difference);
 
-    actualBox.classList.remove(
-      "positive",
-      "negative"
-    );
+    box.classList.remove("positive", "negative");
 
     if (closing.difference > 0) {
-      actualBox.classList.add("positive");
+      box.classList.add("positive");
     }
 
     if (closing.difference < 0) {
-      actualBox.classList.add("negative");
+      box.classList.add("negative");
     }
 
   } else {
 
-    actualBox.classList.add("hidden");
+    box.classList.add("hidden");
 
   }
 }
 
 
-/* =========================
-   RENDER SALES
-   ========================= */
+/* SALES LIST */
 
 function renderSales() {
 
   const list =
     document.getElementById("salesList");
 
-  document.getElementById(
-    "salesCount"
-  ).textContent = sales.length;
+  document.getElementById("salesCount").textContent =
+    sales.length;
 
-  if (sales.length === 0) {
+  if (!sales.length) {
 
     list.innerHTML = `
       <div class="empty-state">
@@ -814,8 +613,7 @@ function renderSales() {
 
     const closed =
       dailyClosings.some(
-        closing =>
-          closing.dateKey === sale.dateKey
+        c => c.dateKey === sale.dateKey
       );
 
     return `
@@ -831,24 +629,23 @@ function renderSales() {
           <span>
             ${escapeHTML(sale.product)}
             • ${formatDateTime(sale.date)}
-            • ${escapeHTML(sale.payment)}
+            • Cash
           </span>
 
         </div>
 
         <div class="list-amount">
 
-          <strong>
-            ${money(sale.total)}
-          </strong>
+          <strong>${money(sale.total)}</strong>
 
           ${
             closed
               ? `<span class="locked-label">🔒 Closed</span>`
-              : `<button class="delete-button"
-                    onclick="deleteSale(${sale.id})">
-                    Delete
-                 </button>`
+              : `<button
+                  class="delete-button"
+                  onclick="deleteSale(${sale.id})">
+                  Delete
+                </button>`
           }
 
         </div>
@@ -860,20 +657,17 @@ function renderSales() {
 }
 
 
-/* =========================
-   RENDER EXPENSES
-   ========================= */
+/* EXPENSE LIST */
 
 function renderExpenses() {
 
   const list =
     document.getElementById("expensesList");
 
-  document.getElementById(
-    "expensesCount"
-  ).textContent = expenses.length;
+  document.getElementById("expensesCount").textContent =
+    expenses.length;
 
-  if (expenses.length === 0) {
+  if (!expenses.length) {
 
     list.innerHTML = `
       <div class="empty-state">
@@ -888,8 +682,7 @@ function renderExpenses() {
 
     const closed =
       dailyClosings.some(
-        closing =>
-          closing.dateKey === expense.dateKey
+        c => c.dateKey === expense.dateKey
       );
 
     return `
@@ -914,17 +707,16 @@ function renderExpenses() {
 
         <div class="list-amount">
 
-          <strong>
-            -${money(expense.amount)}
-          </strong>
+          <strong>-${money(expense.amount)}</strong>
 
           ${
             closed
               ? `<span class="locked-label">🔒 Closed</span>`
-              : `<button class="delete-button"
-                    onclick="deleteExpense(${expense.id})">
-                    Delete
-                 </button>`
+              : `<button
+                  class="delete-button"
+                  onclick="deleteExpense(${expense.id})">
+                  Delete
+                </button>`
           }
 
         </div>
@@ -936,16 +728,14 @@ function renderExpenses() {
 }
 
 
-/* =========================
-   RENDER STOCK
-   ========================= */
+/* STOCK LIST */
 
 function renderStock() {
 
   const list =
     document.getElementById("stockList");
 
-  if (stock.length === 0) {
+  if (!stock.length) {
 
     list.innerHTML = `
       <div class="empty-state">
@@ -968,11 +758,7 @@ function renderStock() {
           <h3>${escapeHTML(item.name)}</h3>
 
           <p>
-            ${
-              low
-                ? "⚠️ Low stock"
-                : "Available"
-            }
+            ${low ? "⚠️ Low stock" : "Available"}
           </p>
         </div>
 
@@ -997,9 +783,7 @@ function renderStock() {
 }
 
 
-/* =========================
-   RENDER DAILY CLOSE
-   ========================= */
+/* DAILY CLOSE */
 
 function renderDailyClose() {
 
@@ -1017,25 +801,17 @@ function renderDailyClose() {
     openPanel.classList.add("hidden");
     closedPanel.classList.remove("hidden");
 
-    document.getElementById(
-      "closedDateText"
-    ).textContent =
+    document.getElementById("closedDateText").textContent =
       `Closed on ${formatDateTime(closing.closedAt)}`;
 
-    document.getElementById(
-      "closedExpected"
-    ).textContent =
+    document.getElementById("closedExpected").textContent =
       money(closing.expectedClosingCash);
 
-    document.getElementById(
-      "closedActual"
-    ).textContent =
+    document.getElementById("closedActual").textContent =
       money(closing.actualClosingCash);
 
     const difference =
-      document.getElementById(
-        "closedDifference"
-      );
+      document.getElementById("closedDifference");
 
     difference.textContent =
       money(closing.difference);
@@ -1046,20 +822,14 @@ function renderDailyClose() {
     );
 
     if (closing.difference > 0) {
-      difference.classList.add(
-        "difference-positive"
-      );
+      difference.classList.add("difference-positive");
     }
 
     if (closing.difference < 0) {
-      difference.classList.add(
-        "difference-negative"
-      );
+      difference.classList.add("difference-negative");
     }
 
-    document.getElementById(
-      "closedBags"
-    ).textContent =
+    document.getElementById("closedBags").textContent =
       closing.bagsSold;
 
   } else {
@@ -1067,50 +837,26 @@ function renderDailyClose() {
     openPanel.classList.remove("hidden");
     closedPanel.classList.add("hidden");
 
-    const startingCash =
+    const starting =
       getTodayStartingCash();
 
-    const salesTotal =
-      getTodaySales();
+    document.getElementById("startingCash").value =
+      starting || "";
 
-    const expensesTotal =
-      getTodayExpenses();
+    document.getElementById("closeStartingCash").textContent =
+      money(starting);
 
-    const bags =
+    document.getElementById("closeSales").textContent =
+      money(getTodaySales());
+
+    document.getElementById("closeExpenses").textContent =
+      money(getTodayExpenses());
+
+    document.getElementById("closeBags").textContent =
       getTodayBags();
 
-    const expected =
-      getTodayExpectedCash();
-
-    document.getElementById(
-      "startingCash"
-    ).value =
-      startingCash || "";
-
-    document.getElementById(
-      "closeStartingCash"
-    ).textContent =
-      money(startingCash);
-
-    document.getElementById(
-      "closeSales"
-    ).textContent =
-      money(salesTotal);
-
-    document.getElementById(
-      "closeExpenses"
-    ).textContent =
-      money(expensesTotal);
-
-    document.getElementById(
-      "closeBags"
-    ).textContent =
-      bags;
-
-    document.getElementById(
-      "closeExpectedCash"
-    ).textContent =
-      money(expected);
+    document.getElementById("closeExpectedCash").textContent =
+      money(getTodayExpectedCash());
 
   }
 
@@ -1118,17 +864,213 @@ function renderDailyClose() {
 }
 
 
-/* =========================
-   CLOSING HISTORY
-   ========================= */
+/* HISTORY */
 
 function renderClosingHistory() {
 
   const list =
     document.getElementById("closingHistory");
 
-  if (dailyClosings.length === 0) {
+  if (!dailyClosings.length) {
 
     list.innerHTML = `
       <div class="empty-state">
-        🧾
+        🧾 No closed days yet.
+      </div>
+    `;
+
+    return;
+  }
+
+  const sorted =
+    [...dailyClosings].sort(
+      (a, b) =>
+        new Date(b.closedAt) -
+        new Date(a.closedAt)
+    );
+
+  list.innerHTML = sorted.map(c => {
+
+    let differenceClass = "";
+
+    if (c.difference > 0) {
+      differenceClass = "difference-positive";
+    }
+
+    if (c.difference < 0) {
+      differenceClass = "difference-negative";
+    }
+
+    return `
+      <div class="closing-item">
+
+        <div class="closing-header">
+
+          <strong>${formatDate(c.date)}</strong>
+
+          <span class="closed-tag">CLOSED</span>
+
+        </div>
+
+        <div class="closing-details">
+
+          <div>
+            <span>Starting Cash</span>
+            <strong>${money(c.startingCash)}</strong>
+          </div>
+
+          <div>
+            <span>Sales</span>
+            <strong>${money(c.sales)}</strong>
+          </div>
+
+          <div>
+            <span>Expenses</span>
+            <strong>${money(c.expenses)}</strong>
+          </div>
+
+          <div>
+            <span>Bags Sold</span>
+            <strong>${c.bagsSold}</strong>
+          </div>
+
+          <div>
+            <span>Expected</span>
+            <strong>${money(c.expectedClosingCash)}</strong>
+          </div>
+
+          <div>
+            <span>Actual</span>
+            <strong>${money(c.actualClosingCash)}</strong>
+          </div>
+
+          <div>
+            <span>Difference</span>
+            <strong class="${differenceClass}">
+              ${money(c.difference)}
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  }).join("");
+}
+
+
+/* REPORTS */
+
+function renderReports() {
+
+  const totalSales =
+    sales.reduce(
+      (sum, sale) =>
+        sum + Number(sale.total || 0),
+      0
+    );
+
+  const totalExpenses =
+    expenses.reduce(
+      (sum, expense) =>
+        sum + Number(expense.amount || 0),
+      0
+    );
+
+  const totalBags =
+    sales.reduce(
+      (sum, sale) =>
+        sum + Number(sale.quantity || 0),
+      0
+    );
+
+  document.getElementById("reportSales").textContent =
+    money(totalSales);
+
+  document.getElementById("reportExpenses").textContent =
+    money(totalExpenses);
+
+  document.getElementById("reportProfit").textContent =
+    money(totalSales - totalExpenses);
+
+  document.getElementById("reportBags").textContent =
+    totalBags;
+
+  document.getElementById("reportClosedDays").textContent =
+    dailyClosings.length;
+}
+
+
+/* STATUS */
+
+function renderDayStatus() {
+
+  const status =
+    document.getElementById("dayStatus");
+
+  const salesLocked =
+    document.getElementById("salesLocked");
+
+  const expensesLocked =
+    document.getElementById("expensesLocked");
+
+  const saleButton =
+    document.getElementById("saleButton");
+
+  const expenseButton =
+    document.getElementById("expenseButton");
+
+  if (isTodayClosed()) {
+
+    status.textContent = "Day Closed";
+
+    status.classList.remove("open");
+    status.classList.add("closed");
+
+    salesLocked.classList.remove("hidden");
+    expensesLocked.classList.remove("hidden");
+
+    saleButton.disabled = true;
+    expenseButton.disabled = true;
+
+    saleButton.style.opacity = ".5";
+    expenseButton.style.opacity = ".5";
+
+  } else {
+
+    status.textContent = "Day Open";
+
+    status.classList.remove("closed");
+    status.classList.add("open");
+
+    salesLocked.classList.add("hidden");
+    expensesLocked.classList.add("hidden");
+
+    saleButton.disabled = false;
+    expenseButton.disabled = false;
+
+    saleButton.style.opacity = "1";
+    expenseButton.style.opacity = "1";
+
+  }
+}
+
+
+/* RECENT SALES */
+
+function renderRecentSales() {
+
+  const list =
+    document.getElementById("recentSales");
+
+  const recent =
+    sales.slice(0, 5);
+
+  if (!recent.length) {
+
+    list.innerHTML = `
+      <div class="empty-state">
+        🍿 No sales yet.
+      </div>
+     
