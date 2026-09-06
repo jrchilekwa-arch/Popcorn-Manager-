@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f59e0b">
+  <meta name="description" content="Simple popcorn business manager">
+
+  <title>Popcorn Manager 🍿</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div>
+      <h1>🍿 Popcorn Manager</h1>
+      <p>Manage your popcorn business</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="page active">
+
+      <div class="welcome">
+        <h2>Today's Business</h2>
+        <p id="currentDate"></p>
+      </div>
+
+      <div class="stats">
+
+        <div class="card">
+          <span>💰 Sales</span>
+          <strong id="todaySales">K0.00</strong>
+        </div>
+
+        <div class="card">
+          <span>💸 Expenses</span>
+          <strong id="todayExpenses">K0.00</strong>
+        </div>
+
+        <div class="card profit-card">
+          <span>📈 Profit</span>
+          <strong id="todayProfit">K0.00</strong>
+        </div>
+
+        <div class="card">
+          <span>🍿 Sold</span>
+          <strong id="todayItems">0</strong>
+        </div>
+
+      </div>
+
+      <div class="quick-actions">
+
+        <button onclick="showPage('sales')">
+          ➕ Record Sale
+        </button>
+
+        <button onclick="showPage('expenses')">
+          💸 Add Expense
+        </button>
+
+        <button onclick="showPage('stock')">
+          📦 Check Stock
+        </button>
+
+      </div>
+
+      <div class="panel">
+        <h3>Recent Sales</h3>
+        <div id="recentSales">
+          <p class="empty">No sales recorded yet.</p>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- SALES -->
+    <section id="sales" class="page">
+
+      <div class="page-title">
+        <h2>💰 Sales</h2>
+        <p>Record your popcorn sales</p>
+      </div>
+
+      <div class="form-card">
+
+        <label>Popcorn Type</label>
+
+        <select id="saleProduct">
+          <option value="Small Popcorn">Small Popcorn</option>
+          <option value="Medium Popcorn">Medium Popcorn</option>
+          <option value="Large Popcorn">Large Popcorn</option>
+        </select>
+
+        <label>Quantity</label>
+
+        <input
+          type="number"
+          id="saleQuantity"
+          placeholder="e.g. 5"
+          min="1"
+        >
+
+        <label>Price per packet (K)</label>
+
+        <input
+          type="number"
+          id="salePrice"
+          placeholder="e.g. 5"
+          min="0"
+          step="0.01"
+        >
+
+        <label>Payment Method</label>
+
+        <select id="paymentMethod">
+          <option value="Cash">Cash</option>
+          <option value="Mobile Money">Mobile Money</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <button class="primary" onclick="addSale()">
+          🍿 Save Sale
+        </button>
+
+      </div>
+
+      <div class="panel">
+        <h3>Sales History</h3>
+        <div id="salesHistory"></div>
+      </div>
+
+    </section>
+
+
+    <!-- EXPENSES -->
+    <section id="expenses" class="page">
+
+      <div class="page-title">
+        <h2>💸 Expenses</h2>
+        <p>Track money spent on the business</p>
+      </div>
+
+      <div class="form-card">
+
+        <label>Expense</label>
+
+        <select id="expenseName">
+          <option value="Popcorn Kernels">Popcorn Kernels</option>
+          <option value="Cooking Oil">Cooking Oil</option>
+          <option value="Sugar">Sugar</option>
+          <option value="Salt">Salt</option>
+          <option value="Packaging">Packaging</option>
+          <option value="Transport">Transport</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label>Amount (K)</label>
+
+        <input
+          type="number"
+          id="expenseAmount"
+          placeholder="e.g. 30"
+          min="0"
+          step="0.01"
+        >
+
+        <label>Note</label>
+
+        <input
+          type="text"
+          id="expenseNote"
+          placeholder="Optional note"
+        >
+
+        <button class="primary" onclick="addExpense()">
+          💾 Save Expense
+        </button>
+
+      </div>
+
+      <div class="panel">
+        <h3>Expense History</h3>
+        <div id="expensesHistory"></div>
+      </div>
+
+    </section>
+
+
+    <!-- STOCK -->
+    <section id="stock" class="page">
+
+      <div class="page-title">
+        <h2>📦 Stock</h2>
+        <p>Keep track of your supplies</p>
+      </div>
+
+      <div class="form-card">
+
+        <label>Item</label>
+
+        <input
+          type="text"
+          id="stockName"
+          placeholder="e.g. Popcorn Kernels"
+        >
+
+        <label>Quantity</label>
+
+        <input
+          type="number"
+          id="stockQuantity"
+          placeholder="e.g. 10"
+          min="0"
+        >
+
+        <label>Unit</label>
+
+        <select id="stockUnit">
+          <option value="bags">bags</option>
+          <option value="packets">packets</option>
+          <option value="kg">kg</option>
+          <option value="litres">litres</option>
+          <option value="boxes">boxes</option>
+          <option value="pieces">pieces</option>
+        </select>
+
+        <button class="primary" onclick="addStock()">
+          📦 Add Stock
+        </button>
+
+      </div>
+
+      <div class="panel">
+        <h3>Current Stock</h3>
+        <div id="stockList"></div>
+      </div>
+
+    </section>
+
+
+    <!-- REPORTS -->
+    <section id="reports" class="page">
+
+      <div class="page-title">
+        <h2>📊 Reports</h2>
+        <p>See how your business is performing</p>
+      </div>
+
+      <div class="report-card">
+        <span>Total Sales</span>
+        <strong id="totalSales">K0.00</strong>
+      </div>
+
+      <div class="report-card">
+        <span>Total Expenses</span>
+        <strong id="totalExpenses">K0.00</strong>
+      </div>
+
+      <div class="report-card">
+        <span>Total Profit</span>
+        <strong id="totalProfit">K0.00</strong>
+      </div>
+
+      <div class="report-card">
+        <span>Total Popcorn Sold</span>
+        <strong id="totalItems">0</strong>
+      </div>
+
+      <button class="danger" onclick="clearAllData()">
+        🗑️ Clear All Business Data
+      </button>
+
+    </section>
+
+  </main>
+
+
+  <!-- BOTTOM NAVIGATION -->
+
+  <nav class="bottom-nav">
+
+    <button onclick="showPage('dashboard')" id="nav-dashboard">
+      🏠
+      <span>Home</span>
+    </button>
+
+    <button onclick="showPage('sales')" id="nav-sales">
+      💰
+      <span>Sales</span>
+    </button>
+
+    <button onclick="showPage('expenses')" id="nav-expenses">
+      💸
+      <span>Expenses</span>
+    </button>
+
+    <button onclick="showPage('stock')" id="nav-stock">
+      📦
+      <span>Stock</span>
+    </button>
+
+    <button onclick="showPage('reports')" id="nav-reports">
+      📊
+      <span>Reports</span>
+    </button>
+
+  </nav>
+
+
+  <script src="app.js"></script>
+
+</body>
+    </html>
