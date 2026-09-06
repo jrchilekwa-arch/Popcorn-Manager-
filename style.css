@@ -6,35 +6,41 @@
 
 body {
   font-family: Arial, sans-serif;
-  background: #f7f7f7;
+  background: #f5f5f5;
   color: #222;
   padding-bottom: 80px;
 }
+
+
+/* HEADER */
 
 .topbar {
   background: #f59e0b;
   color: white;
   padding: 20px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .topbar h1 {
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .topbar p {
   margin-top: 5px;
-  font-size: 13px;
   opacity: 0.9;
+  font-size: 14px;
 }
+
+
+/* MAIN */
 
 .container {
   max-width: 700px;
   margin: auto;
   padding: 18px;
 }
+
+
+/* PAGES */
 
 .page {
   display: none;
@@ -44,18 +50,34 @@ body {
   display: block;
 }
 
+
+/* TITLES */
+
 .welcome {
   margin-bottom: 20px;
 }
 
 .welcome h2 {
-  font-size: 24px;
+  font-size: 28px;
   margin-bottom: 5px;
 }
 
-.welcome p {
+.welcome p,
+.page-title p {
   color: #777;
 }
+
+.page-title {
+  margin-bottom: 20px;
+}
+
+.page-title h2 {
+  font-size: 25px;
+  margin-bottom: 5px;
+}
+
+
+/* DASHBOARD CARDS */
 
 .stats {
   display: grid;
@@ -65,25 +87,48 @@ body {
 
 .card {
   background: white;
-  padding: 18px;
-  border-radius: 15px;
+  padding: 20px;
+  border-radius: 18px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.06);
 }
 
 .card span {
   display: block;
   color: #777;
-  font-size: 13px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .card strong {
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .profit-card {
-  border-left: 5px solid #16a34a;
+  border-left: 6px solid #16a34a;
 }
+
+
+/* CASH */
+
+.cash-box {
+  background: #111827;
+  color: white;
+  padding: 20px;
+  border-radius: 18px;
+  margin-top: 14px;
+}
+
+.cash-box span {
+  display: block;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.cash-box strong {
+  font-size: 28px;
+}
+
+
+/* QUICK ACTIONS */
 
 .quick-actions {
   display: grid;
@@ -91,25 +136,22 @@ body {
   margin: 20px 0;
 }
 
-button {
-  border: none;
-  cursor: pointer;
-  font-size: 15px;
-}
-
 .quick-actions button {
   background: white;
-  padding: 15px;
-  border-radius: 12px;
+  padding: 17px;
+  border-radius: 14px;
   text-align: left;
   box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
 
+
+/* PANELS */
+
 .panel,
 .form-card {
   background: white;
-  padding: 18px;
-  border-radius: 15px;
+  padding: 20px;
+  border-radius: 18px;
   margin-bottom: 18px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.05);
 }
@@ -118,48 +160,92 @@ button {
   margin-bottom: 15px;
 }
 
-.page-title {
-  margin-bottom: 18px;
-}
 
-.page-title h2 {
-  margin-bottom: 5px;
-}
-
-.page-title p {
-  color: #777;
-}
+/* FORMS */
 
 label {
   display: block;
   font-size: 14px;
   font-weight: bold;
-  margin: 12px 0 6px;
+  margin: 14px 0 7px;
 }
 
 input,
 select {
   width: 100%;
-  padding: 13px;
+  padding: 14px;
   border: 1px solid #ddd;
-  border-radius: 9px;
-  font-size: 15px;
+  border-radius: 10px;
+  font-size: 16px;
   background: white;
 }
+
+
+/* PRODUCT */
+
+.fixed-product {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #fff7e6;
+  border-radius: 12px;
+}
+
+.product-icon {
+  font-size: 38px;
+}
+
+.fixed-product strong {
+  font-size: 18px;
+}
+
+.fixed-product p {
+  color: #777;
+  margin-top: 3px;
+}
+
+
+/* SALE TOTAL */
+
+.sale-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f5f5f5;
+  margin-top: 15px;
+  padding: 16px;
+  border-radius: 10px;
+}
+
+.sale-total span {
+  color: #777;
+}
+
+.sale-total strong {
+  font-size: 25px;
+}
+
+
+/* BUTTONS */
 
 .primary {
   width: 100%;
   background: #f59e0b;
   color: white;
-  padding: 14px;
+  padding: 15px;
   border-radius: 10px;
   margin-top: 18px;
   font-weight: bold;
+  font-size: 16px;
 }
 
 .primary:hover {
   opacity: 0.9;
 }
+
+
+/* HISTORY */
 
 .sale-item,
 .expense-item,
@@ -192,18 +278,37 @@ select {
 
 .item-price {
   font-weight: bold;
+  white-space: nowrap;
 }
+
+
+/* EMPTY */
 
 .empty {
   color: #888;
   text-align: center;
-  padding: 20px 0;
+  padding: 20px;
 }
+
+
+/* DELETE */
+
+.delete-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+
+/* REPORTS */
 
 .report-card {
   background: white;
   padding: 20px;
-  border-radius: 15px;
+  border-radius: 16px;
   margin-bottom: 12px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
@@ -215,25 +320,41 @@ select {
 }
 
 .report-card strong {
-  font-size: 25px;
+  font-size: 27px;
 }
+
+.profit-report {
+  border-left: 6px solid #16a34a;
+}
+
+.summary {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+
+/* DANGER */
 
 .danger {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   background: #dc2626;
   color: white;
   border-radius: 10px;
-  margin-top: 15px;
+  margin-top: 10px;
   font-weight: bold;
 }
+
+
+/* BOTTOM NAV */
 
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 68px;
+  height: 70px;
   background: white;
   display: flex;
   justify-content: space-around;
@@ -261,13 +382,8 @@ select {
   font-weight: bold;
 }
 
-.delete-btn {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 7px 10px;
-  border-radius: 7px;
-  font-size: 12px;
-}
+
+/* DESKTOP */
 
 @media (min-width: 600px) {
 
@@ -283,4 +399,4 @@ select {
     grid-template-columns: repeat(4, 1fr);
   }
 
-}
+  }
