@@ -2,562 +2,929 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Popcorn Manager V3</title>
-  <meta name="description" content="Simple popcorn business manager">
-  <link rel="stylesheet" href="./style.css">
+
+  <meta
+    name="description"
+    content="Simple popcorn business manager"
+  >
+
+  <link
+    rel="stylesheet"
+    href="./style.css?v=3"
+  >
 </head>
 
 <body>
 
 <header class="top-header">
+
   <div>
     <h1>🍿 Popcorn Manager</h1>
     <p>Small Popcorn Business</p>
   </div>
-  <div id="dayStatus" class="status-badge open">Day Open</div>
+
+  <div
+    id="dayStatus"
+    class="status-badge open"
+  >
+    🟢 Day Open
+  </div>
+
 </header>
+
 
 <main>
 
-  <!-- HOME -->
-  <section id="dashboard" class="page active">
+<!-- =========================
+     DASHBOARD
+========================= -->
 
-    <div class="welcome-card">
+<section
+  id="dashboard"
+  class="page active"
+>
+
+  <div class="welcome-card">
+
+    <h2>Today's Business</h2>
+
+    <p id="todayDate">
+      Loading date...
+    </p>
+
+  </div>
+
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+
+      <span>Starting Cash</span>
+
+      <strong id="dashboardStartingCash">
+        K0.00
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Today's Sales</span>
+
+      <strong id="dashboardSales">
+        K0.00
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Today's Expenses</span>
+
+      <strong id="dashboardExpenses">
+        K0.00
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Bags Sold</span>
+
+      <strong id="dashboardBags">
+        0
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <div class="cash-card">
+
+    <span>Expected Closing Cash</span>
+
+    <strong id="dashboardExpectedCash">
+      K0.00
+    </strong>
+
+  </div>
+
+
+  <div
+    id="dashboardActualCashBox"
+    class="cash-result"
+    style="display:none;"
+  >
+
+    <div>
+
+      <span>Actual Closing Cash</span>
+
+      <strong id="dashboardActualCash">
+        K0.00
+      </strong>
+
+    </div>
+
+
+    <div>
+
+      <span>Cash Difference</span>
+
+      <strong id="dashboardDifference">
+        K0.00
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <h2 class="section-title">
+    Quick Actions
+  </h2>
+
+
+  <div class="quick-grid">
+
+    <button
+      class="quick-button"
+      onclick="showPage('sales')"
+    >
+      🛍️
+      <span>Record Sale</span>
+    </button>
+
+
+    <button
+      class="quick-button"
+      onclick="showPage('expenses')"
+    >
+      💸
+      <span>Add Expense</span>
+    </button>
+
+
+    <button
+      class="quick-button"
+      onclick="showPage('stock')"
+    >
+      📦
+      <span>Manage Stock</span>
+    </button>
+
+
+    <button
+      class="quick-button"
+      onclick="showPage('dailyClose')"
+    >
+      🔒
+      <span>Close Day</span>
+    </button>
+
+  </div>
+
+
+  <h2 class="section-title">
+    Recent Sales
+  </h2>
+
+
+  <div
+    id="recentSales"
+    class="list"
+  >
+    <p>No sales yet today.</p>
+  </div>
+
+</section>
+
+
+
+<!-- =========================
+     SALES
+========================= -->
+
+<section
+  id="sales"
+  class="page"
+>
+
+  <div class="page-header">
+
+    <h2>🛍️ Sales</h2>
+
+    <p>
+      Record the number of popcorn bags sold.
+    </p>
+
+  </div>
+
+
+  <div
+    id="salesLocked"
+    class="notice"
+    style="display:none;"
+  >
+    🔒 Today is closed. Sales cannot be changed.
+  </div>
+
+
+  <div class="card">
+
+    <label for="saleQuantity">
+      Number of bags
+    </label>
+
+    <input
+      id="saleQuantity"
+      type="number"
+      min="1"
+      step="1"
+      placeholder="Enter quantity"
+    >
+
+
+    <p>
+      Total:
+      <strong id="saleTotalPreview">
+        K0.00
+      </strong>
+    </p>
+
+
+    <button
+      id="saleButton"
+      class="primary-button"
+      onclick="addSale()"
+    >
+      🍿 Record Sale
+    </button>
+
+  </div>
+
+
+  <div class="section-title-row">
+
+    <h3>Today's Sales</h3>
+
+    <span
+      id="salesCount"
+      class="count-badge"
+    >
+      0
+    </span>
+
+  </div>
+
+
+  <div
+    id="salesList"
+    class="list"
+  >
+    <p>No sales recorded today.</p>
+  </div>
+
+</section>
+
+
+
+<!-- =========================
+     EXPENSES
+========================= -->
+
+<section
+  id="expenses"
+  class="page"
+>
+
+  <div class="page-header">
+
+    <h2>💸 Expenses</h2>
+
+    <p>
+      Keep track of money spent on the business.
+    </p>
+
+  </div>
+
+
+  <div
+    id="expensesLocked"
+    class="notice"
+    style="display:none;"
+  >
+    🔒 Today is closed. Expenses cannot be changed.
+  </div>
+
+
+  <div class="card">
+
+    <label for="expenseCategory">
+      Category
+    </label>
+
+    <input
+      id="expenseCategory"
+      type="text"
+      placeholder="e.g. Sugar"
+    >
+
+
+    <label for="expenseAmount">
+      Amount
+    </label>
+
+    <input
+      id="expenseAmount"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="K0.00"
+    >
+
+
+    <label for="expenseNote">
+      Note
+    </label>
+
+    <input
+      id="expenseNote"
+      type="text"
+      placeholder="Optional note"
+    >
+
+
+    <button
+      id="expenseButton"
+      class="primary-button"
+      onclick="addExpense()"
+    >
+      💸 Add Expense
+    </button>
+
+  </div>
+
+
+  <div class="section-title-row">
+
+    <h3>Today's Expenses</h3>
+
+    <span
+      id="expensesCount"
+      class="count-badge"
+    >
+      0
+    </span>
+
+  </div>
+
+
+  <div
+    id="expensesList"
+    class="list"
+  >
+    <p>No expenses recorded today.</p>
+  </div>
+
+</section>
+
+
+
+<!-- =========================
+     STOCK
+========================= -->
+
+<section
+  id="stock"
+  class="page"
+>
+
+  <div class="page-header">
+
+    <h2>📦 Stock</h2>
+
+    <p>
+      Keep track of your popcorn supplies.
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <label for="stockItem">
+      Stock item
+    </label>
+
+    <input
+      id="stockItem"
+      type="text"
+      placeholder="e.g. Popcorn kernels"
+    >
+
+
+    <label for="stockQuantity">
+      Quantity
+    </label>
+
+    <input
+      id="stockQuantity"
+      type="number"
+      min="1"
+      step="1"
+      placeholder="Enter quantity"
+    >
+
+
+    <button
+      class="primary-button"
+      onclick="addStock()"
+    >
+      📦 Add Stock
+    </button>
+
+  </div>
+
+
+  <h3 class="section-title">
+    Current Stock
+  </h3>
+
+
+  <div
+    id="stockList"
+    class="list"
+  >
+    <p>No stock recorded.</p>
+  </div>
+
+</section>
+
+
+
+<!-- =========================
+     DAILY CLOSE
+========================= -->
+
+<section
+  id="dailyClose"
+  class="page"
+>
+
+  <div class="page-header">
+
+    <h2>🔒 Daily Closing</h2>
+
+    <p>
+      Check your cash before finishing the day.
+    </p>
+
+  </div>
+
+
+  <div
+    id="openDayPanel"
+  >
+
+    <div class="summary-card">
+
       <div>
-        <h2>Today's Business</h2>
-        <p id="todayDate"></p>
-      </div>
-      <div class="big-popcorn">🍿</div>
-    </div>
-
-    <div class="stats-grid">
-
-      <div class="stat-card">
-        <span class="stat-icon">💰</span>
-        <p>Starting Cash</p>
-        <h3 id="dashboardStartingCash">K0.00</h3>
+        <span>Starting Cash</span>
+        <strong id="closeStartingCash">
+          K0.00
+        </strong>
       </div>
 
-      <div class="stat-card">
-        <span class="stat-icon">🛒</span>
-        <p>Today's Sales</p>
-        <h3 id="dashboardSales">K0.00</h3>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">💸</span>
-        <p>Today's Expenses</p>
-        <h3 id="dashboardExpenses">K0.00</h3>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">🍿</span>
-        <p>Bags Sold</p>
-        <h3 id="dashboardBags">0</h3>
-      </div>
-
-    </div>
-
-    <div class="cash-card">
-      <div>
-        <p>Expected Closing Cash</p>
-        <h2 id="dashboardExpectedCash">K0.00</h2>
-      </div>
-      <span class="cash-icon">💵</span>
-    </div>
-
-    <div id="dashboardActualCashBox" class="cash-result hidden">
-      <div>
-        <p>Actual Closing Cash</p>
-        <h2 id="dashboardActualCash">K0.00</h2>
-      </div>
 
       <div>
-        <p>Difference</p>
-        <h2 id="dashboardDifference">K0.00</h2>
-      </div>
-    </div>
-
-    <h2 class="section-title">Quick Actions</h2>
-
-    <div class="quick-grid">
-
-      <button class="quick-button" onclick="showPage('sales')">
-        <span>🍿</span>
-        Record Sale
-      </button>
-
-      <button class="quick-button" onclick="showPage('expenses')">
-        <span>💸</span>
-        Add Expense
-      </button>
-
-      <button class="quick-button" onclick="showPage('dailyClose')">
-        <span>🧾</span>
-        Close Day
-      </button>
-
-      <button class="quick-button" onclick="showPage('stock')">
-        <span>📦</span>
-        Check Stock
-      </button>
-
-    </div>
-
-    <div class="section-heading">
-      <h2>Recent Sales</h2>
-      <button class="text-button" onclick="showPage('sales')">View All</button>
-    </div>
-
-    <div id="recentSales" class="list-container"></div>
-
-  </section>
-
-
-  <!-- SALES -->
-  <section id="sales" class="page">
-
-    <div class="page-title">
-      <h2>🍿 Record Sale</h2>
-      <p>Small popcorn • K1 per bag • Cash</p>
-    </div>
-
-    <div id="salesLocked" class="warning-card hidden">
-      🔒 <strong>This day is closed.</strong>
-      Reopen the day before recording new sales.
-    </div>
-
-    <div class="form-card">
-
-      <div class="product-preview">
-        <div class="product-icon">🍿</div>
-
-        <div>
-          <h3>Small Popcorn</h3>
-          <p>K1 per bag • Cash payment</p>
-        </div>
+        <span>Sales</span>
+        <strong id="closeSales">
+          K0.00
+        </strong>
       </div>
 
-      <label for="saleQuantity">Number of bags sold</label>
+
+      <div>
+        <span>Expenses</span>
+        <strong id="closeExpenses">
+          K0.00
+        </strong>
+      </div>
+
+
+      <div>
+        <span>Bags Sold</span>
+        <strong id="closeBags">
+          0
+        </strong>
+      </div>
+
+
+      <div>
+        <span>Expected Cash</span>
+        <strong id="closeExpectedCash">
+          K0.00
+        </strong>
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <label for="actualCash">
+        Actual Cash in Hand
+      </label>
 
       <input
+        id="actualCash"
         type="number"
-        id="saleQuantity"
-        min="1"
-        placeholder="Example: 20"
-      >
-
-      <div class="total-preview">
-        <span>Total Sale</span>
-        <strong id="saleTotalPreview">K0.00</strong>
-      </div>
-
-      <button id="saleButton" class="primary-button" onclick="addSale()">
-        🍿 Save Sale
-      </button>
-
-    </div>
-
-    <div class="section-heading">
-      <h2>Sales History</h2>
-      <span id="salesCount" class="count-badge">0</span>
-    </div>
-
-    <div id="salesList" class="list-container"></div>
-
-  </section>
-
-
-  <!-- EXPENSES -->
-  <section id="expenses" class="page">
-
-    <div class="page-title">
-      <h2>💸 Expenses</h2>
-      <p>Track money spent by the business</p>
-    </div>
-
-    <div id="expensesLocked" class="warning-card hidden">
-      🔒 <strong>This day is closed.</strong>
-      Reopen the day before recording new expenses.
-    </div>
-
-    <div class="form-card">
-
-      <label for="expenseCategory">Category</label>
-
-      <select id="expenseCategory">
-        <option>Popcorn Kernels</option>
-        <option>Cooking Oil</option>
-        <option>Sugar</option>
-        <option>Salt</option>
-        <option>Popcorn Bags</option>
-        <option>Transport</option>
-        <option>Other</option>
-      </select>
-
-      <label for="expenseAmount">Amount</label>
-
-      <input
-        type="number"
-        id="expenseAmount"
         min="0"
         step="0.01"
-        placeholder="Example: 20"
+        placeholder="Enter cash counted"
       >
 
-      <label for="expenseNote">Note</label>
 
-      <input
-        type="text"
-        id="expenseNote"
-        placeholder="Example: Bought cooking oil"
+      <button
+        class="primary-button"
+        onclick="closeDay()"
       >
-
-      <button id="expenseButton" class="primary-button" onclick="addExpense()">
-        💸 Save Expense
+        🔒 Close Today
       </button>
 
     </div>
 
-    <div class="section-heading">
-      <h2>Expense History</h2>
-      <span id="expensesCount" class="count-badge">0</span>
+  </div>
+
+
+  <div
+    id="closedDayPanel"
+    style="display:none;"
+  >
+
+    <div class="notice success">
+      🔒 Today has been closed.
     </div>
 
-    <div id="expensesList" class="list-container"></div>
 
-  </section>
+    <div class="summary-card">
+
+      <div>
+        <span>Date</span>
+        <strong id="closedDateText">
+          -
+        </strong>
+      </div>
 
 
-  <!-- STOCK -->
-  <section id="stock" class="page">
+      <div>
+        <span>Expected Cash</span>
+        <strong id="closedExpected">
+          K0.00
+        </strong>
+      </div>
 
-    <div class="page-title">
-      <h2>📦 Stock</h2>
-      <p>Keep track of your supplies</p>
+
+      <div>
+        <span>Actual Cash</span>
+        <strong id="closedActual">
+          K0.00
+        </strong>
+      </div>
+
+
+      <div>
+        <span>Difference</span>
+        <strong id="closedDifference">
+          K0.00
+        </strong>
+      </div>
+
+
+      <div>
+        <span>Bags Sold</span>
+        <strong id="closedBags">
+          0
+        </strong>
+      </div>
+
     </div>
 
-    <div class="form-card">
 
-      <label for="stockItem">Item</label>
+    <button
+      class="secondary-button"
+      onclick="reopenToday()"
+    >
+      🔓 Reopen Today
+    </button>
 
-      <input
-        type="text"
-        id="stockItem"
-        placeholder="Example: Popcorn bags"
+  </div>
+
+
+  <h3 class="section-title">
+    Daily History
+  </h3>
+
+
+  <div
+    id="closingHistory"
+    class="list"
+  >
+    <p>No closed days yet.</p>
+  </div>
+
+</section>
+
+
+
+<!-- =========================
+     REPORTS
+========================= -->
+
+<section
+  id="reports"
+  class="page"
+>
+
+  <div class="page-header">
+
+    <h2>📊 Reports</h2>
+
+    <p>
+      See how your popcorn business is performing.
+    </p>
+
+  </div>
+
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+
+      <span>Total Sales</span>
+
+      <strong id="reportSales">
+        K0.00
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Total Expenses</span>
+
+      <strong id="reportExpenses">
+        K0.00
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Total Profit</span>
+
+      <strong id="reportProfit">
+        K0.00
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Total Bags Sold</span>
+
+      <strong id="reportBags">
+        0
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Closed Days</span>
+
+      <strong id="reportClosedDays">
+        0
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <span>Price Per Bag</span>
+
+      <strong>
+        K1.00
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <h3>Business Details</h3>
+
+    <p>
+      <strong>Product:</strong>
+      Small Popcorn
+    </p>
+
+    <p>
+      <strong>Price:</strong>
+      K1 per bag
+    </p>
+
+    <p>
+      <strong>Packaging:</strong>
+      Bags
+    </p>
+
+    <p>
+      <strong>Payment:</strong>
+      Cash
+    </p>
+
+  </div>
+
+
+  <!-- BACKUP & RESTORE -->
+
+  <div class="card backup-card">
+
+    <h3>
+      💾 Backup & Restore
+    </h3>
+
+    <p>
+      Keep a safe copy of your popcorn business records.
+    </p>
+
+
+    <div class="backup-buttons">
+
+      <button
+        class="primary-button"
+        onclick="backupData()"
       >
-
-      <label for="stockQuantity">Quantity</label>
-
-      <input
-        type="number"
-        id="stockQuantity"
-        min="0"
-        placeholder="Example: 100"
-      >
-
-      <button class="primary-button" onclick="addStock()">
-        📦 Add Stock
+        💾 Backup Data
       </button>
 
-    </div>
 
-    <div class="section-heading">
-      <h2>Current Stock</h2>
-    </div>
+      <label class="file-button">
 
-    <div id="stockList" class="stock-grid"></div>
-
-  </section>
-
-
-  <!-- DAILY CLOSE -->
-  <section id="dailyClose" class="page">
-
-    <div class="page-title">
-      <h2>🧾 Daily Close</h2>
-      <p>Check your cash before ending the day</p>
-    </div>
-
-    <div id="openDayPanel">
-
-      <div class="form-card">
-
-        <div class="close-status">
-          <span>🟢</span>
-
-          <div>
-            <strong>Day is Open</strong>
-            <p>Enter your starting cash.</p>
-          </div>
-        </div>
-
-        <label for="startingCash">Starting Cash</label>
+        ♻️ Restore Data
 
         <input
-          type="number"
-          id="startingCash"
-          min="0"
-          step="0.01"
-          placeholder="Example: 50"
+          type="file"
+          accept=".json"
+          onchange="restoreData(event)"
+          hidden
         >
 
-        <button class="secondary-button" onclick="saveStartingCash()">
-          💰 Save Starting Cash
-        </button>
-
-      </div>
-
-
-      <div class="summary-card">
-
-        <h3>Today's Summary</h3>
-
-        <div class="summary-row">
-          <span>Starting Cash</span>
-          <strong id="closeStartingCash">K0.00</strong>
-        </div>
-
-        <div class="summary-row">
-          <span>Sales</span>
-          <strong id="closeSales">K0.00</strong>
-        </div>
-
-        <div class="summary-row">
-          <span>Expenses</span>
-          <strong id="closeExpenses">K0.00</strong>
-        </div>
-
-        <div class="summary-row">
-          <span>Bags Sold</span>
-          <strong id="closeBags">0</strong>
-        </div>
-
-        <div class="summary-divider"></div>
-
-        <div class="summary-row expected">
-          <span>Expected Closing Cash</span>
-          <strong id="closeExpectedCash">K0.00</strong>
-        </div>
-
-      </div>
-
-
-      <div class="form-card">
-
-        <h3>💵 Count Your Cash</h3>
-
-        <p class="helper-text">
-          Count the physical cash you have and enter the total.
-        </p>
-
-        <label for="actualCash">Actual Closing Cash</label>
-
-        <input
-          type="number"
-          id="actualCash"
-          min="0"
-          step="0.01"
-          placeholder="Example: 120"
-        >
-
-        <button class="primary-button" onclick="closeDay()">
-          🔒 Close Today's Business
-        </button>
-
-      </div>
+      </label>
 
     </div>
 
 
-    <div id="closedDayPanel" class="hidden">
+    <p class="small-text">
 
-      <div class="success-card">
+      Backup your data regularly so you don't lose
+      your business records.
 
-        <div class="success-icon">✅</div>
+    </p>
 
-        <h2>Day Closed</h2>
-
-        <p id="closedDateText"></p>
-
-        <div class="closed-result-grid">
-
-          <div>
-            <span>Expected</span>
-            <strong id="closedExpected">K0.00</strong>
-          </div>
-
-          <div>
-            <span>Actual</span>
-            <strong id="closedActual">K0.00</strong>
-          </div>
-
-          <div>
-            <span>Difference</span>
-            <strong id="closedDifference">K0.00</strong>
-          </div>
-
-          <div>
-            <span>Bags Sold</span>
-            <strong id="closedBags">0</strong>
-          </div>
-
-        </div>
-
-        <button class="outline-button" onclick="reopenToday()">
-          🔓 Reopen Today
-        </button>
-
-      </div>
-
-    </div>
+  </div>
 
 
-    <div class="section-heading">
-      <h2>Daily Closing History</h2>
-    </div>
+  <div class="card danger-card">
 
-    <div id="closingHistory" class="list-container"></div>
+    <h3>
+      ⚠️ Data Management
+    </h3>
 
-  </section>
+    <p>
+      Clear all business records from this device.
+    </p>
 
+    <button
+      class="danger-button"
+      onclick="clearAllData()"
+    >
+      🗑️ Clear All Data
+    </button>
 
-  <!-- REPORTS -->
-  <section id="reports" class="page">
+  </div>
 
-    <div class="page-title">
-      <h2>📊 Reports</h2>
-      <p>Overall business performance</p>
-    </div>
-
-    <div class="stats-grid">
-
-      <div class="stat-card">
-        <span class="stat-icon">💰</span>
-        <p>Total Sales</p>
-        <h3 id="reportSales">K0.00</h3>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">💸</span>
-        <p>Total Expenses</p>
-        <h3 id="reportExpenses">K0.00</h3>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">📈</span>
-        <p>Total Profit</p>
-        <h3 id="reportProfit">K0.00</h3>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">🍿</span>
-        <p>Total Bags Sold</p>
-        <h3 id="reportBags">0</h3>
-      </div>
-
-    </div>
-
-
-    <div class="report-card">
-
-      <h3>Business Overview</h3>
-
-      <div class="report-row">
-        <span>Price per bag</span>
-        <strong>K1.00</strong>
-      </div>
-
-      <div class="report-row">
-        <span>Payment</span>
-        <strong>Cash</strong>
-      </div>
-
-      <div class="report-row">
-        <span>Packaging</span>
-        <strong>Bags</strong>
-      </div>
-
-      <div class="report-row">
-        <span>Closed days</span>
-        <strong id="reportClosedDays">0</strong>
-      </div>
-
-    </div>
-
-
-    <div class="danger-card">
-
-      <h3>⚠️ Danger Zone</h3>
-
-      <p>Delete all business data stored on this device.</p>
-
-      <button class="danger-button" onclick="clearAllData()">
-        Delete All Data
-      </button>
-
-    </div>
-
-  </section>
+</section>
 
 </main>
-<div class="card backup-card">
-  <h3>💾 Backup & Restore</h3>
-  <p>Keep a copy of your popcorn business records.</p>
 
-  <div class="backup-buttons">
-    <button onclick="backupData()">💾 Backup Data</button>
 
-    <label class="file-button">
-      ♻️ Restore Data
-      <input type="file" accept=".json" onchange="restoreData(event)" hidden>
-    </label>
-  </div>
 
-  <p class="small-text">
-    Backup your data regularly so you don't lose your records.
-  </p>
-  </div>
+<!-- =========================
+     BOTTOM NAVIGATION
+========================= -->
 
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
 
-  <button class="nav-button active" data-page="dashboard" onclick="showPage('dashboard')">
+  <button
+    class="nav-button active"
+    data-page="dashboard"
+    onclick="showPage('dashboard')"
+  >
     <span>🏠</span>
     <small>Home</small>
   </button>
 
-  <button class="nav-button" data-page="sales" onclick="showPage('sales')">
-    <span>🍿</span>
+
+  <button
+    class="nav-button"
+    data-page="sales"
+    onclick="showPage('sales')"
+  >
+    <span>🛍️</span>
     <small>Sales</small>
   </button>
 
-  <button class="nav-button" data-page="expenses" onclick="showPage('expenses')">
+
+  <button
+    class="nav-button"
+    data-page="expenses"
+    onclick="showPage('expenses')"
+  >
     <span>💸</span>
     <small>Expenses</small>
   </button>
 
-  <button class="nav-button" data-page="stock" onclick="showPage('stock')">
+
+  <button
+    class="nav-button"
+    data-page="stock"
+    onclick="showPage('stock')"
+  >
     <span>📦</span>
     <small>Stock</small>
   </button>
 
-  <button class="nav-button" data-page="dailyClose" onclick="showPage('dailyClose')">
-    <span>🧾</span>
+
+  <button
+    class="nav-button"
+    data-page="dailyClose"
+    onclick="showPage('dailyClose')"
+  >
+    <span>🔒</span>
     <small>Close</small>
   </button>
 
-  <button class="nav-button" data-page="reports" onclick="showPage('reports')">
+
+  <button
+    class="nav-button"
+    data-page="reports"
+    onclick="showPage('reports')"
+  >
     <span>📊</span>
     <small>Reports</small>
   </button>
 
 </nav>
 
-<div id="toast" class="toast"></div>
 
-<script src="./app.js"></script>
+
+<!-- =========================
+     TOAST
+========================= -->
+
+<div
+  id="toast"
+  class="toast"
+></div>
+
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script src="./app.js?v=3"></script>
 
 </body>
-      </html>
+  </html>
