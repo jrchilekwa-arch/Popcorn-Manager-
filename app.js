@@ -1,125 +1,44 @@
-/* =====================================================
-   🍿 POPCORN MANAGER V3
-   Small Popcorn Business
-   Price: K1 per bag
-   Payment: Cash
-===================================================== */
+/* =========================================================
+   🍿 POPCORN MANAGER
+   Short, complete JavaScript
+   ========================================================= */
 
-const POPCORN_PRICE = 1;
-const PRODUCT_NAME = "Small Popcorn";
+const KEYS = {
+  sales: "popcornSales",
+  expenses: "popcornExpenses",
+  stock: "popcornStock",
+  starting: "popcornStartingCashByDate",
+  closing: "popcornDailyClosings"
+};
 
-/* =====================================================
-   DATA
-===================================================== */
+const PRICE = 1;
 
-let sales = JSON.parse(
-  localStorage.getItem("popcornSales") || "[]"
-);
-
-let expenses = JSON.parse(
-  localStorage.getItem("popcornExpenses") || "[]"
-);
-
-let stock = JSON.parse(
-  localStorage.getItem("popcornStock") || "[]"
-);
-
-let dailyClosings = JSON.parse(
-  localStorage.getItem("popcornDailyClosings") || "[]"
-);
-
-let startingCashByDate = JSON.parse(
-  localStorage.getItem("popcornStartingCashByDate") || "{}"
-);
-
-
-/* =====================================================
-   SAVE DATA
-===================================================== */
-
-function saveData() {
-
-  localStorage.setItem(
-    "popcornSales",
-    JSON.stringify(sales)
-  );
-
-  localStorage.setItem(
-    "popcornExpenses",
-    JSON.stringify(expenses)
-  );
-
-  localStorage.setItem(
-    "popcornStock",
-    JSON.stringify(stock)
-  );
-
-  localStorage.setItem(
-    "popcornDailyClosings",
-    JSON.stringify(dailyClosings)
-  );
-
-  localStorage.setItem(
-    "popcornStartingCashByDate",
-    JSON.stringify(startingCashByDate)
-  );
-}
-
-
-/* =====================================================
-   DATE
-===================================================== */
-
-function getTodayKey() {
-
-  const date = new Date();
-
-  return (
-    date.getFullYear() +
-    "-" +
-    String(date.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(date.getDate()).padStart(2, "0")
-  );
-}
-
-
-function formatDate(value) {
-
-  const date = new Date(value);
-
-  if (isNaN(date.getTime())) {
-    return value;
+// ---------- STORAGE ----------
+function get(key, fallback = []) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+  } catch {
+    return fallback;
   }
-
-  return date.toLocaleDateString("en-ZM", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
 }
 
-
-function formatDateTime(value) {
-
-  const date = new Date(value);
-
-  if (isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString("en-ZM", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+function save(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
+let sales = get(KEYS.sales);
+let expenses = get(KEYS.expenses);
+let stock = get(KEYS.stock);
+let startingCash = get(KEYS.starting, {});
+let closings = get(KEYS.closing, []);
 
-function todayReadable() {
+// ---------- HELPERS ----------
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
 
+function todayText() {
   return new Date().toLocaleDateString("en-ZM", {
     weekday: "long",
     day: "numeric",
@@ -128,24 +47,12 @@ function todayReadable() {
   });
 }
 
-
-/* =====================================================
-   MONEY
-===================================================== */
-
-function money(value) {
-
-  return "K" + Number(value || 0).toFixed(2);
+function money(n) {
+  return `K${Number(n || 0).toFixed(2)}`;
 }
 
-
-/* =====================================================
-   SECURITY
-===================================================== */
-
-function escapeHTML(value) {
-
-  return String(value)
+function escapeHTML(text) {
+  return String(text ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -153,68 +60,75 @@ function escapeHTML(value) {
     .replace(/'/g, "&#039;");
 }
 
-
-/* =====================================================
-   TOAST
-===================================================== */
-
-function showToast(message) {
-
-  const toast =
-    document.getElementById("toast");
-
-  if (!toast) {
-    alert(message);
-    return;
-  }
-
-  toast.textContent = message;
-
-  toast.classList.add("show");
-
-  setTimeout(function () {
-    toast.classList.remove("show");
-  }, 2500);
+function formatDateTime(date) {
+  if (!date) return "";
+  return new Date(date).toLocaleString("en-ZM");
 }
 
+function toast(message) {
+  const el = document.getElementById("toast");
+  if (!el) return;
 
-/* =====================================================
-   NAVIGATION
-===================================================== */
+  el.textContent = message;
+  el.classList.add("show");
 
-function showPage(pageId) {
+  setTimeout(() => el.classList.remove("show"), 2500);
+}
 
-  const pages =
-    document.querySelectorAll(".page");
+function todaySales() {
+  return sales.filter(x => x.dateKey === todayKey());
+}
 
-  pages.forEach(function (page) {
-    page.classList.remove("active");
+function todayExpenses() {
+  return expenses.filter(x => x.dateKey === todayKey());
+}
+
+function todayBags() {
+  return todaySales().reduce((sum, x) => sum + Number(x.quantity || 0), 0);
+}
+
+function salesTotal() {
+  return todaySales().reduce((sum, x) => sum + Number(x.total || 0), 0);
+}
+
+function expensesTotal() {
+  return todayExpenses().reduce((sum, x) => sum + Number(x.amount || 0), 0);
+}
+
+function getStartingCash() {
+  return Number(startingCash[todayKey()] || 0);
+}
+
+function expectedCash() {
+  return getStartingCash() + salesTotal() - expensesTotal();
+}
+
+function isTodayClosed() {
+  return closings.some(x => x.dateKey === todayKey());
+}
+
+function currentClosing() {
+  return closings.find(x => x.dateKey === todayKey());
+}
+
+// ---------- NAVIGATION ----------
+function showPage(page) {
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove("active");
   });
 
-  const selectedPage =
-    document.getElementById(pageId);
+  const target = document.getElementById(page);
 
-  if (selectedPage) {
-    selectedPage.classList.add("active");
+  if (target) {
+    target.classList.add("active");
   }
 
-  const navButtons =
-    document.querySelectorAll(".nav-button");
-
-  navButtons.forEach(function (button) {
-    button.classList.remove("active");
-  });
-
-  const activeButton =
-    document.querySelector(
-      '.nav-button[data-page="' +
-      pageId +
-      '"]'
+  document.querySelectorAll(".nav-button").forEach(btn => {
+    btn.classList.toggle(
+      "active",
+      btn.dataset.page === page
     );
-
-  if (activeButton) {
-    activeButton.classList.add("active");
-  }
+  });
 
   updateAll();
 
@@ -224,1057 +138,587 @@ function showPage(pageId) {
   });
 }
 
-
-/* =====================================================
-   TODAY SALES
-===================================================== */
-
-function getTodaySales() {
-
-  const today = getTodayKey();
-
-  return sales
-    .filter(function (sale) {
-      return sale.dateKey === today;
-    })
-    .reduce(function (total, sale) {
-      return total + Number(sale.total || 0);
-    }, 0);
-}
-
-
-function getTodayBags() {
-
-  const today = getTodayKey();
-
-  return sales
-    .filter(function (sale) {
-      return sale.dateKey === today;
-    })
-    .reduce(function (total, sale) {
-      return total + Number(sale.quantity || 0);
-    }, 0);
-}
-
-
-function getTodayExpenses() {
-
-  const today = getTodayKey();
-
-  return expenses
-    .filter(function (expense) {
-      return expense.dateKey === today;
-    })
-    .reduce(function (total, expense) {
-      return total + Number(expense.amount || 0);
-    }, 0);
-}
-
-
-/* =====================================================
-   STARTING CASH
-===================================================== */
-
-function getTodayStartingCash() {
-
-  return Number(
-    startingCashByDate[getTodayKey()] || 0
-  );
-}
-
-
+// ---------- STARTING CASH ----------
 function saveStartingCash() {
-
   if (isTodayClosed()) {
-
-    showToast(
-      "Today is closed. Reopen it first."
-    );
-
+    toast("Today is already closed.");
     return;
   }
 
-  const input =
-    document.getElementById("startingCash");
+  const input = document.getElementById("startingCash");
+  const amount = Number(input?.value);
 
-  if (!input) {
+  if (isNaN(amount) || amount < 0) {
+    toast("Enter a valid starting cash amount.");
     return;
   }
 
-  const amount = Number(input.value);
+  startingCash[todayKey()] = amount;
+  save(KEYS.starting, startingCash);
 
-  if (
-    input.value === "" ||
-    amount < 0 ||
-    isNaN(amount)
-  ) {
-
-    showToast(
-      "Enter a valid starting cash amount."
-    );
-
-    return;
-  }
-
-  startingCashByDate[getTodayKey()] =
-    amount;
-
-  saveData();
-
+  toast("Starting cash saved.");
   updateAll();
-
-  showToast(
-    "Starting cash saved."
-  );
 }
 
-
-/* =====================================================
-   EXPECTED CLOSING CASH
-===================================================== */
-
-function getTodayExpectedCash() {
-
-  return (
-    getTodayStartingCash() +
-    getTodaySales() -
-    getTodayExpenses()
-  );
-}
-
-
-/* =====================================================
-   DAILY CLOSING
-===================================================== */
-
-function getTodayClosing() {
-
-  return dailyClosings.find(
-    function (closing) {
-      return closing.dateKey === getTodayKey();
-    }
-  );
-}
-
-
-function isTodayClosed() {
-
-  return Boolean(
-    getTodayClosing()
-  );
-}
-
-
-/* =====================================================
-   SALES
-===================================================== */
-
+// ---------- SALES ----------
 function addSale() {
-
   if (isTodayClosed()) {
-
-    showToast(
-      "Day is closed. Reopen it first."
-    );
-
+    toast("Today is closed.");
     return;
   }
 
-  const input =
-    document.getElementById(
-      "saleQuantity"
-    );
+  const input = document.getElementById("saleQuantity");
+  const quantity = Number(input?.value);
 
-  if (!input) {
-    return;
-  }
-
-  const quantity =
-    Number(input.value);
-
-  if (
-    input.value === "" ||
-    quantity <= 0 ||
-    isNaN(quantity)
-  ) {
-
-    showToast(
-      "Enter the number of bags sold."
-    );
-
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    toast("Enter a valid quantity.");
     return;
   }
 
   const sale = {
-
     id: Date.now(),
-
-    dateKey:
-      getTodayKey(),
-
-    date:
-      new Date().toISOString(),
-
-    product:
-      PRODUCT_NAME,
-
-    quantity:
-      quantity,
-
-    price:
-      POPCORN_PRICE,
-
-    total:
-      quantity * POPCORN_PRICE,
-
-    payment:
-      "Cash"
+    dateKey: todayKey(),
+    date: new Date().toISOString(),
+    quantity,
+    total: quantity * PRICE
   };
 
-  sales.unshift(sale);
+  sales.push(sale);
+  save(KEYS.sales, sales);
 
-  saveData();
+  if (input) input.value = "";
 
-  input.value = "";
-
-  updateSalePreview();
-
+  toast(`${quantity} bag${quantity === 1 ? "" : "s"} sold.`);
   updateAll();
-
-  showToast(
-    quantity +
-    " bag(s) sold for " +
-    money(sale.total)
-  );
 }
-
-
-/* =====================================================
-   SALE PREVIEW
-===================================================== */
-
-function updateSalePreview() {
-
-  const input =
-    document.getElementById(
-      "saleQuantity"
-    );
-
-  const preview =
-    document.getElementById(
-      "saleTotalPreview"
-    );
-
-  if (!input || !preview) {
-    return;
-  }
-
-  const quantity =
-    Number(input.value) || 0;
-
-  preview.textContent =
-    money(
-      quantity * POPCORN_PRICE
-    );
-}
-
-
-/* =====================================================
-   DELETE SALE
-===================================================== */
 
 function deleteSale(id) {
-
-  const sale =
-    sales.find(function (item) {
-      return item.id === id;
-    });
-
-  if (!sale) {
+  if (isTodayClosed()) {
+    toast("Closed days cannot be changed.");
     return;
   }
 
-  const closed =
-    dailyClosings.some(
-      function (closing) {
-        return (
-          closing.dateKey ===
-          sale.dateKey
-        );
-      }
-    );
+  sales = sales.filter(x => x.id !== id);
+  save(KEYS.sales, sales);
 
-  if (closed) {
-
-    showToast(
-      "This sale belongs to a closed day."
-    );
-
-    return;
-  }
-
-  if (!confirm("Delete this sale?")) {
-    return;
-  }
-
-  sales =
-    sales.filter(function (item) {
-      return item.id !== id;
-    });
-
-  saveData();
-
+  toast("Sale deleted.");
   updateAll();
-
-  showToast(
-    "Sale deleted."
-  );
 }
 
-
-/* =====================================================
-   EXPENSES
-===================================================== */
-
+// ---------- EXPENSES ----------
 function addExpense() {
-
   if (isTodayClosed()) {
-
-    showToast(
-      "Day is closed. Reopen it first."
-    );
-
+    toast("Today is closed.");
     return;
   }
 
-  const categoryElement =
-    document.getElementById(
-      "expenseCategory"
-    );
-
-  const amountElement =
-    document.getElementById(
-      "expenseAmount"
-    );
-
-  const noteElement =
-    document.getElementById(
-      "expenseNote"
-    );
-
-  if (
-    !categoryElement ||
-    !amountElement ||
-    !noteElement
-  ) {
-    return;
-  }
+  const category =
+    document.getElementById("expenseCategory")?.value.trim();
 
   const amount =
-    Number(amountElement.value);
+    Number(document.getElementById("expenseAmount")?.value);
 
-  if (
-    amountElement.value === "" ||
-    amount <= 0 ||
-    isNaN(amount)
-  ) {
+  const note =
+    document.getElementById("expenseNote")?.value.trim();
 
-    showToast(
-      "Enter a valid expense amount."
-    );
-
+  if (!category) {
+    toast("Enter an expense category.");
     return;
   }
 
-  const expense = {
+  if (isNaN(amount) || amount <= 0) {
+    toast("Enter a valid expense amount.");
+    return;
+  }
 
+  expenses.push({
     id: Date.now(),
+    dateKey: todayKey(),
+    date: new Date().toISOString(),
+    category,
+    amount,
+    note
+  });
 
-    dateKey:
-      getTodayKey(),
+  save(KEYS.expenses, expenses);
 
-    date:
-      new Date().toISOString(),
+  document.getElementById("expenseCategory").value = "";
+  document.getElementById("expenseAmount").value = "";
+  document.getElementById("expenseNote").value = "";
 
-    category:
-      categoryElement.value,
-
-    amount:
-      amount,
-
-    note:
-      noteElement.value.trim()
-  };
-
-  expenses.unshift(expense);
-
-  saveData();
-
-  amountElement.value = "";
-
-  noteElement.value = "";
-
+  toast("Expense added.");
   updateAll();
-
-  showToast(
-    "Expense of " +
-    money(amount) +
-    " saved."
-  );
 }
-
-
-/* =====================================================
-   DELETE EXPENSE
-===================================================== */
 
 function deleteExpense(id) {
-
-  const expense =
-    expenses.find(function (item) {
-      return item.id === id;
-    });
-
-  if (!expense) {
+  if (isTodayClosed()) {
+    toast("Closed days cannot be changed.");
     return;
   }
 
-  const closed =
-    dailyClosings.some(
-      function (closing) {
-        return (
-          closing.dateKey ===
-          expense.dateKey
-        );
-      }
-    );
+  expenses = expenses.filter(x => x.id !== id);
+  save(KEYS.expenses, expenses);
 
-  if (closed) {
-
-    showToast(
-      "This expense belongs to a closed day."
-    );
-
-    return;
-  }
-
-  if (!confirm("Delete this expense?")) {
-    return;
-  }
-
-  expenses =
-    expenses.filter(function (item) {
-      return item.id !== id;
-    });
-
-  saveData();
-
+  toast("Expense deleted.");
   updateAll();
-
-  showToast(
-    "Expense deleted."
-  );
 }
 
-
-/* =====================================================
-   STOCK
-===================================================== */
-
+// ---------- STOCK ----------
 function addStock() {
-
-  const itemInput =
-    document.getElementById(
-      "stockItem"
-    );
-
-  const quantityInput =
-    document.getElementById(
-      "stockQuantity"
-    );
-
-  if (
-    !itemInput ||
-    !quantityInput
-  ) {
-    return;
-  }
-
-  const name =
-    itemInput.value.trim();
+  const item =
+    document.getElementById("stockItem")?.value.trim();
 
   const quantity =
-    Number(quantityInput.value);
+    Number(document.getElementById("stockQuantity")?.value);
 
-  if (!name) {
-
-    showToast(
-      "Enter a stock item."
-    );
-
+  if (!item) {
+    toast("Enter a stock item.");
     return;
   }
 
-  if (
-    quantityInput.value === "" ||
-    quantity < 0 ||
-    isNaN(quantity)
-  ) {
-
-    showToast(
-      "Enter a valid quantity."
-    );
-
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    toast("Enter a valid quantity.");
     return;
   }
 
-  const existing =
-    stock.find(function (item) {
+  stock.push({
+    id: Date.now(),
+    item,
+    quantity,
+    date: new Date().toISOString()
+  });
 
-      return (
-        item.name.toLowerCase() ===
-        name.toLowerCase()
-      );
+  save(KEYS.stock, stock);
 
-    });
+  document.getElementById("stockItem").value = "";
+  document.getElementById("stockQuantity").value = "";
 
-  if (existing) {
-
-    existing.quantity =
-      Number(existing.quantity) +
-      quantity;
-
-  } else {
-
-    stock.unshift({
-
-      id: Date.now(),
-
-      name:
-        name,
-
-      quantity:
-        quantity
-    });
-  }
-
-  saveData();
-
-  itemInput.value = "";
-
-  quantityInput.value = "";
-
-  updateAll();
-
-  showToast(
-    "Stock updated."
-  );
+  toast("Stock added.");
+  renderStock();
 }
-
 
 function deleteStock(id) {
+  stock = stock.filter(x => x.id !== id);
+  save(KEYS.stock, stock);
 
-  if (!confirm("Remove this stock item?")) {
-    return;
-  }
-
-  stock =
-    stock.filter(function (item) {
-      return item.id !== id;
-    });
-
-  saveData();
-
-  updateAll();
-
-  showToast(
-    "Stock removed."
-  );
+  toast("Stock removed.");
+  renderStock();
 }
 
-
-/* =====================================================
-   CLOSE DAY
-===================================================== */
-
+// ---------- CLOSE DAY ----------
 function closeDay() {
-
   if (isTodayClosed()) {
-
-    showToast(
-      "Today is already closed."
-    );
-
+    toast("Today is already closed.");
     return;
   }
 
-  const input =
-    document.getElementById(
-      "actualCash"
-    );
+  const actual =
+    Number(document.getElementById("actualCash")?.value);
 
-  if (!input) {
+  if (isNaN(actual) || actual < 0) {
+    toast("Enter the actual cash.");
     return;
   }
 
-  const actualCash =
-    Number(input.value);
-
-  if (
-    input.value === "" ||
-    actualCash < 0 ||
-    isNaN(actualCash)
-  ) {
-
-    showToast(
-      "Enter your actual closing cash."
-    );
-
-    return;
-  }
-
-  const startingCash =
-    getTodayStartingCash();
-
-  const salesTotal =
-    getTodaySales();
-
-  const expensesTotal =
-    getTodayExpenses();
-
-  const bags =
-    getTodayBags();
-
-  const expected =
-    startingCash +
-    salesTotal -
-    expensesTotal;
-
-  const difference =
-    actualCash -
-    expected;
-
-  const closing = {
-
-    id:
-      Date.now(),
-
-    dateKey:
-      getTodayKey(),
-
-    date:
-      new Date().toISOString(),
-
-    startingCash:
-      startingCash,
-
-    sales:
-      salesTotal,
-
-    expenses:
-      expensesTotal,
-
-    expectedClosingCash:
-      expected,
-
-    actualClosingCash:
-      actualCash,
-
-    difference:
-      difference,
-
-    bagsSold:
-      bags,
-
-    closedAt:
-      new Date().toISOString()
+  const record = {
+    id: Date.now(),
+    dateKey: todayKey(),
+    date: todayText(),
+    startingCash: getStartingCash(),
+    sales: salesTotal(),
+    expenses: expensesTotal(),
+    expectedClosingCash: expectedCash(),
+    actualClosingCash: actual,
+    difference: actual - expectedCash(),
+    bagsSold: todayBags(),
+    closedAt: new Date().toISOString()
   };
 
-  dailyClosings.unshift(
-    closing
-  );
+  closings.push(record);
+  save(KEYS.closing, closings);
 
-  saveData();
-
+  toast("Day closed successfully.");
   updateAll();
-
-  showToast(
-    "Business day closed successfully."
-  );
 }
-
-
-/* =====================================================
-   REOPEN TODAY
-===================================================== */
 
 function reopenToday() {
-
-  if (!isTodayClosed()) {
-
-    showToast(
-      "Today is already open."
-    );
-
-    return;
-  }
-
-  if (
-    !confirm(
-      "Reopen today's business?\n\n" +
-      "You can then correct today's sales " +
-      "and expenses."
-    )
-  ) {
-    return;
-  }
-
-  dailyClosings =
-    dailyClosings.filter(
-      function (closing) {
-        return (
-          closing.dateKey !==
-          getTodayKey()
-        );
-      }
-    );
-
-  saveData();
-
-  updateAll();
-
-  showToast(
-    "Today has been reopened."
+  const index = closings.findIndex(
+    x => x.dateKey === todayKey()
   );
+
+  if (index === -1) {
+    toast("Today is not closed.");
+    return;
+  }
+
+  closings.splice(index, 1);
+  save(KEYS.closing, closings);
+
+  toast("Today reopened.");
+  updateAll();
 }
 
-
-/* =====================================================
-   DASHBOARD
-===================================================== */
-
+// ---------- DASHBOARD ----------
 function renderDashboard() {
+  const ids = {
+    todayDate: todayText(),
+    dashboardStartingCash: money(getStartingCash()),
+    dashboardSales: money(salesTotal()),
+    dashboardExpenses: money(expensesTotal()),
+    dashboardBags: todayBags(),
+    dashboardExpectedCash: money(expectedCash())
+  };
 
-  const todayDate =
-    document.getElementById(
-      "todayDate"
-    );
+  Object.entries(ids).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  });
 
-  const starting =
-    document.getElementById(
-      "dashboardStartingCash"
-    );
+  const box = document.getElementById("dashboardActualCashBox");
+  const actual = document.getElementById("dashboardActualCash");
+  const difference = document.getElementById("dashboardDifference");
 
-  const salesElement =
-    document.getElementById(
-      "dashboardSales"
-    );
-
-  const expensesElement =
-    document.getElementById(
-      "dashboardExpenses"
-    );
-
-  const bagsElement =
-    document.getElementById(
-      "dashboardBags"
-    );
-
-  const expected =
-    document.getElementById(
-      "dashboardExpectedCash"
-    );
-
-  if (todayDate) {
-    todayDate.textContent =
-      todayReadable();
-  }
-
-  if (starting) {
-    starting.textContent =
-      money(
-        getTodayStartingCash()
-      );
-  }
-
-  if (salesElement) {
-    salesElement.textContent =
-      money(
-        getTodaySales()
-      );
-  }
-
-  if (expensesElement) {
-    expensesElement.textContent =
-      money(
-        getTodayExpenses()
-      );
-  }
-
-  if (bagsElement) {
-    bagsElement.textContent =
-      getTodayBags();
-  }
-
-  if (expected) {
-    expected.textContent =
-      money(
-        getTodayExpectedCash()
-      );
-  }
-
-  const actualBox =
-    document.getElementById(
-      "dashboardActualCashBox"
-    );
-
-  const closing =
-    getTodayClosing();
-
-  if (!actualBox) {
-    return;
-  }
+  const closing = currentClosing();
 
   if (closing) {
-
-    actualBox.classList.remove(
-      "hidden"
-    );
-
-    const actual =
-      document.getElementById(
-        "dashboardActualCash"
-      );
-
-    const difference =
-      document.getElementById(
-        "dashboardDifference"
-      );
-
-    if (actual) {
-
-      actual.textContent =
-        money(
-          closing.actualClosingCash
-        );
-    }
-
+    if (box) box.style.display = "";
+    if (actual) actual.textContent = money(closing.actualClosingCash);
     if (difference) {
-
       difference.textContent =
-        money(
-          closing.difference
-        );
+        `${closing.difference >= 0 ? "+" : ""}${money(closing.difference)}`;
     }
-
   } else {
-
-    actualBox.classList.add(
-      "hidden"
-    );
+    if (box) box.style.display = "none";
   }
+
+  renderRecentSales();
 }
 
+// ---------- SALES DISPLAY ----------
+function renderRecentSales() {
+  const el = document.getElementById("recentSales");
+  if (!el) return;
 
-/* =====================================================
-   SALES LIST
-===================================================== */
+  const list = todaySales().slice().reverse().slice(0, 5);
 
+  if (!list.length) {
+    el.innerHTML = "<p>No sales yet today.</p>";
+    return;
+  }
+
+  el.innerHTML = list.map(sale => `
+    <div class="list-item">
+      <div>
+        <strong>${sale.quantity} bag${sale.quantity === 1 ? "" : "s"}</strong>
+        <span>${formatDateTime(sale.date)}</span>
+      </div>
+      <div class="list-amount">
+        ${money(sale.total)}
+      </div>
+    </div>
+  `).join("");
+}
+
+// ---------- SALES PAGE ----------
 function renderSales() {
+  const list = document.getElementById("salesList");
+  const count = document.getElementById("salesCount");
+  const locked = document.getElementById("salesLocked");
+  const button = document.getElementById("saleButton");
 
-  const list =
-    document.getElementById(
-      "salesList"
-    );
+  const closed = isTodayClosed();
 
-  const count =
-    document.getElementById(
-      "salesCount"
-    );
+  if (locked) {
+    locked.style.display = closed ? "" : "none";
+  }
 
-  if (!list) {
+  if (button) {
+    button.disabled = closed;
+  }
+
+  const items = todaySales().slice().reverse();
+
+  if (count) count.textContent = items.length;
+
+  if (!list) return;
+
+  if (!items.length) {
+    list.innerHTML = "<p>No sales recorded today.</p>";
     return;
   }
 
-  if (count) {
-    count.textContent =
-      sales.length;
-  }
-
-  if (!sales.length) {
-
-    list.innerHTML = `
-      <div class="empty-state">
-        🍿 No sales recorded yet.
+  list.innerHTML = items.map(sale => `
+    <div class="list-item">
+      <div>
+        <strong>${sale.quantity} bag${sale.quantity === 1 ? "" : "s"}</strong>
+        <span>${formatDateTime(sale.date)}</span>
       </div>
-    `;
 
-    return;
-  }
-
-  list.innerHTML =
-    sales.map(function (sale) {
-
-      const closed =
-        dailyClosings.some(
-          function (closing) {
-            return (
-              closing.dateKey ===
-              sale.dateKey
-            );
-          }
-        );
-
-      return `
-        <div class="list-item">
-
-          <div class="list-main">
-
-            <strong>
-              ${escapeHTML(
-                sale.quantity
-              )}
-              bag${
-                Number(sale.quantity) === 1
-                  ? ""
-                  : "s"
-              }
-            </strong>
-
-            <span>
-              ${escapeHTML(
-                sale.product
-              )}
-              •
-              ${formatDateTime(
-                sale.date
-              )}
-              • Cash
-            </span>
-
-          </div>
-
-          <div class="list-amount">
-
-            <strong>
-              ${money(
-                sale.total
-              )}
-            </strong>
-
-            ${
-              closed
-                ? `
-                  <span class="locked-label">
-                    🔒 Closed
-                  </span>
-                `
-                : `
-                  <button
-                    class="delete-button"
-                    onclick="deleteSale(${sale.id})">
-                    Delete
-                  </button>
-                `
-            }
-
-          </div>
-
-        </div>
-      `;
-
-    }).join("");
+      <div>
+        <strong>${money(sale.total)}</strong>
+        ${closed ? "" : `
+          <button onclick="deleteSale(${sale.id})">
+            Delete
+          </button>
+        `}
+      </div>
+    </div>
+  `).join("");
 }
 
-
-/* =====================================================
-   EXPENSE LIST
-===================================================== */
-
+// ---------- EXPENSE PAGE ----------
 function renderExpenses() {
+  const list = document.getElementById("expensesList");
+  const count = document.getElementById("expensesCount");
+  const locked = document.getElementById("expensesLocked");
+  const button = document.getElementById("expenseButton");
 
-  const list =
-    document.getElementById(
-      "expensesList"
-    );
+  const closed = isTodayClosed();
 
-  const count =
-    document.getElementById(
-      "expensesCount"
-    );
+  if (locked) {
+    locked.style.display = closed ? "" : "none";
+  }
 
-  if (!list) {
+  if (button) {
+    button.disabled = closed;
+  }
+
+  const items = todayExpenses().slice().reverse();
+
+  if (count) count.textContent = items.length;
+
+  if (!list) return;
+
+  if (!items.length) {
+    list.innerHTML = "<p>No expenses recorded today.</p>";
     return;
   }
 
-  if (count) {
-    count.textContent =
-      expenses.length;
-  }
-
-  if (!expenses.length) {
-
-    list.innerHTML = `
-      <div class="empty-state">
-        💸 No expenses recorded yet.
+  list.innerHTML = items.map(expense => `
+    <div class="list-item">
+      <div>
+        <strong>${escapeHTML(expense.category)}</strong>
+        <span>
+          ${expense.note
+            ? escapeHTML(expense.note) + " • "
+            : ""}
+          ${formatDateTime(expense.date)}
+        </span>
       </div>
-    `;
 
+      <div class="list-amount">
+        <strong>-${money(expense.amount)}</strong>
+        ${closed ? `
+          <span>🔒 Closed</span>
+        ` : `
+          <button onclick="deleteExpense(${expense.id})">
+            Delete
+          </button>
+        `}
+      </div>
+    </div>
+  `).join("");
+}
+
+// ---------- STOCK PAGE ----------
+function renderStock() {
+  const list = document.getElementById("stockList");
+  if (!list) return;
+
+  if (!stock.length) {
+    list.innerHTML = "<p>No stock recorded.</p>";
     return;
   }
 
-  list.innerHTML =
-    expenses.map(function (expense) {
+  list.innerHTML = stock.slice().reverse().map(item => `
+    <div class="list-item">
+      <div>
+        <strong>${escapeHTML(item.item)}</strong>
+        <span>Added ${formatDateTime(item.date)}</span>
+      </div>
 
-      const closed =
-        dailyClosings.some(
-          function (closing) {
-            return (
-              closing.dateKey ===
-              expense.dateKey
-            );
-          }
-        );
+      <div>
+        <strong>${item.quantity}</strong>
+        <button onclick="deleteStock(${item.id})">
+          Delete
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
 
-      return `
-        <div class="list-item">
+// ---------- CLOSE PAGE ----------
+function renderDailyClose() {
+  const closed = isTodayClosed();
+  const closing = currentClosing();
 
-          <div class="list-main">
+  const openPanel = document.getElementById("openDayPanel");
+  const closedPanel = document.getElementById("closedDayPanel");
 
-            <strong>
-              ${escapeHTML(
-                expense.category
-              )}
-            </strong>
+  if (openPanel) openPanel.style.display = closed ? "none" : "";
+  if (closedPanel) closedPanel.style.display = closed ? "" : "none";
 
-            <span>
-              ${
-                expense.note
-                  ? escapeHTML(
-                      expense.note
-                    ) + " • "
-                  : ""
-              }
+  const values = {
+    closeStartingCash: money(getStartingCash()),
+    closeSales: money(salesTotal()),
+    closeExpenses: money(expensesTotal()),
+    closeBags: todayBags(),
+    closeExpectedCash: money(expectedCash())
+  };
 
-              ${formatDateTime(
-                expense.date
-              )}
-            </span>
+  Object.entries(values).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  });
 
-          </div>
+  if (closing) {
+    const data = {
+      closedDateText: closing.date,
+      closedExpected: money(closing.expectedClosingCash),
+      closedActual: money(closing.actualClosingCash),
+      closedDifference:
+        `${closing.difference >= 0 ? "+" : ""}${money(closing.difference)}`,
+      closedBags: closing.bagsSold
+    };
 
-          <div class="list-amount">
+    Object.entries(data).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    });
+  }
 
-            <strong>
-              -${money(
-                expense.amount
-              )}
-            </strong>
+  renderClosingHistory();
+}
 
-            ${
-              closed
-                ? `
-                  <span class="locked-label">
-                    🔒 Closed
-                  </span>
-              
+// ---------- CLOSING HISTORY ----------
+function renderClosingHistory() {
+  const el = document.getElementById("closingHistory");
+  if (!el) return;
+
+  if (!closings.length) {
+    el.innerHTML = "<p>No closed days yet.</p>";
+    return;
+  }
+
+  el.innerHTML = closings.slice().reverse().map(day => `
+    <div class="list-item">
+      <div>
+        <strong>${escapeHTML(day.date)}</strong>
+        <span>
+          ${day.bagsSold} bags •
+          Sales ${money(day.sales)} •
+          Expenses ${money(day.expenses)}
+        </span>
+      </div>
+
+      <div>
+        <strong>${money(day.actualClosingCash)}</strong>
+        <span>
+          Difference:
+          ${day.difference >= 0 ? "+" : ""}
+          ${money(day.difference)}
+        </span>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ---------- REPORTS ----------
+function renderReports() {
+  const totalSales =
+    sales.reduce((sum, x) => sum + Number(x.total || 0), 0);
+
+  const totalExpenses =
+    expenses.reduce((sum, x) => sum + Number(x.amount || 0), 0);
+
+  const totalBags =
+    sales.reduce((sum, x) => sum + Number(x.quantity || 0), 0);
+
+  const values = {
+    reportSales: money(totalSales),
+    reportExpenses: money(totalExpenses),
+    reportProfit: money(totalSales - totalExpenses),
+    reportBags: totalBags,
+    reportClosedDays: closings.length
+  };
+
+  Object.entries(values).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  });
+}
+
+// ---------- STATUS ----------
+function renderStatus() {
+  const status = document.getElementById("dayStatus");
+
+  if (status) {
+    status.textContent = isTodayClosed()
+      ? "🔒 Day Closed"
+      : "🟢 Day Open";
+  }
+}
+
+// ---------- PREVIEW ----------
+function updateSalePreview() {
+  const input = document.getElementById("saleQuantity");
+  const preview = document.getElementById("saleTotalPreview");
+
+  if (!input || !preview) return;
+
+  const quantity = Number(input.value || 0);
+  preview.textContent = money(quantity * PRICE);
+}
+
+// ---------- EVERYTHING ----------
+function updateAll() {
+  renderDashboard();
+  renderSales();
+  renderExpenses();
+  renderStock();
+  renderDailyClose();
+  renderReports();
+  renderStatus();
+  updateSalePreview();
+}
+
+// ---------- CLEAR DATA ----------
+function clearAllData() {
+  const confirmed = confirm(
+    "Delete ALL popcorn business data? This cannot be undone."
+  );
+
+  if (!confirmed) return;
+
+  localStorage.removeItem(KEYS.sales);
+  localStorage.removeItem(KEYS.expenses);
+  localStorage.removeItem(KEYS.stock);
+  localStorage.removeItem(KEYS.starting);
+  localStorage.removeItem(KEYS.closing);
+
+  sales = [];
+  expenses = [];
+  stock = [];
+  startingCash = {};
+  closings = [];
+
+  toast("All data cleared.");
+  updateAll();
+}
+
+// ---------- START ----------
+document.addEventListener("DOMContentLoaded", () => {
+  const date = document.getElementById("todayDate");
+
+  if (date) {
+    date.textContent = todayText();
+  }
+
+  const saleInput = document.getElementById("saleQuantity");
+
+  if (saleInput) {
+    saleInput.addEventListener("input", updateSalePreview);
+  }
+
+  updateAll();
+});
