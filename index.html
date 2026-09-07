@@ -502,7 +502,23 @@
   </section>
 
 </main>
+<div class="card backup-card">
+  <h3>💾 Backup & Restore</h3>
+  <p>Keep a copy of your popcorn business records.</p>
 
+  <div class="backup-buttons">
+    <button onclick="backupData()">💾 Backup Data</button>
+
+    <label class="file-button">
+      ♻️ Restore Data
+      <input type="file" accept=".json" onchange="restoreData(event)" hidden>
+    </label>
+  </div>
+
+  <p class="small-text">
+    Backup your data regularly so you don't lose your records.
+  </p>
+  </div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
